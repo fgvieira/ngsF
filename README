@@ -1,0 +1,105 @@
+
+# ngsF
+
+ngsF is a program to estimate per-individual inbreeding coefficients. It uses a probabilistic framework to take the uncertainty of genotype's assignation into account.
+
+By default ngsF loads the entire file into memory. However, if the file is too big and not enough memory is available, ngsF can also load chunks as they are needed. This is implemented on the BGZF library (from SAMTOOLS package), which allows for fast random access to BGZIP compressed files through an internal virtual index. This library can only deal with BGZIP files but a binary to compress them is provided.
+
+If you want to use this library just add -D_USE_BGZF to the FLAGS on the Makefile.
+
+
+
+## Compile
+To compile entire package just run the Makefile:
+
+% make
+
+
+
+## Test
+To test the binaries just run the test script:
+% cd test/
+% sh test.sh
+
+and check the resulting checksums.
+
+
+
+## Run ngsF
+
+% ./ngsF [options] -n_ind INT -glf /path/to/glf/file -out /path/to/output/file
+
+
+
+### Options
+
+-glf		FILE	Input GL file. Format as 3*n_ind*n_sites doubles in binary.
+			It can be in uncompressed [default] or BGZIP format.
+
+-out		FILE	Output file name.
+
+-n_ind		INT	Sample size (number of individuals).
+
+-n_sites	INT	Total number of sites.
+
+-chunk_size	INT	Size of each analysis chunck. [default: 10000]
+
+-approx_EM		Use the faster approximated EM ML algorithm
+
+-fast_lkl		Enables an intra-EM LogLkl calculation.
+			NOTE: For debugging use only! LogLkl is calculated while 
+			estimating the next iteration parameters, speeding up 
+			the computation (no need for between-iteration de-novo LKL 
+			calculation). This LKL will be unphased and incomplete: 
+			unphased because it will reflect the previous iterarion 
+			values, and incomplete because it will miss all skipped 
+			sites (f == 0).
+
+-init_values    CHAR    Initial values of individual F and site frequency:
+ 		 or	 r:     random in (0,1)
+		FILE	 e:     estimated (not recomended for low coverage data)
+			 u:	uniform = 0.01 [default]
+			 FILE:  read from FILE (n_ind + n_sites doubles)
+
+-max_iters	INT	Maximum number of EM iterations. [default: 1500]
+
+-min_epsilon	FLOAT	Maximum parameters RMSD between iterations to assume 
+			convergence. [default: 1e-5]
+
+-n_threads	INT	Number of threads to use. [default: 1]
+
+-quick			Quick run. Only computes initial "freq" and "indF" values.
+			NOTE: For debugging use only! Do not use in any analysis.
+
+-version		Prints program version and exits.
+
+-verbose	INT	Selects verbosity level. [default: 1]
+			NOTE: Values more than 4 print large ammounts of data.
+			For debugging use only!
+
+
+
+### Stopping Criteria
+An issue on iterative algorithms is the stopping criteria. ngsF implements a dual 
+condition threshold: relative difference in log-likelihood and estimates RMSD 
+(F and freq). As for which threshold to use, simulations show that 1e-5 seems 
+to be a reasonable value. However, if you're dealing with low coverage data 
+(2x-3x), it might be worth to use lower thresholds (between 1e-6 and 1e-9).
+
+
+### Sugested usage
+ngsF has two different methods implemented: one true EM and an approximated EM. The 
+latter was developed to help reduce the computation time of the former by providing 
+more accurate initial values. Example usage:
+
+% ./ngsF -n_ind INT -glf input.glf -out file1.indF -approx_EM
+
+% ./ngsF -n_ind INT -glf input.glf -out file2.indF -init_values file1.indF.pars
+
+
+### Hints
+- When analyzing low coverage data, it is recomended to use random starting points 
+and more strict stopping criteria (eg. -init_values r -min_epsilon 1e-9).
+
+- With high coverage, although F is not really usefull in the prior, it seems lower 
+inital values perform better (-init_values u).
