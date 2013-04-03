@@ -77,6 +77,8 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 	for(uint64_t c = 0; c < chunk_size; c++) {
 #ifdef _USE_BGZF
 		int bytes_read = bgzf_read(pars->in_glf_fh, chunk_data[c], (int) pars->n_ind * 3 * sizeof(double));
+		if(pars->call_geno)
+			call_geno(chunk_data[c], pars->n_ind, 3);
 		uint64_t elems_read = (uint64_t) bytes_read / sizeof(double);
 #else
 		chunk_data[c] = pars->data[start_pos+c];
@@ -94,4 +96,30 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 #endif
 
 	return( total_elems_read/(pars->n_ind * 3) );
+}
+
+
+
+void call_geno(double *site_gl, int n_ind, int n_geno) {
+
+	for (int i = 0; i < n_ind; i++) {
+		int max_pos = array_max_pos(&site_gl[i*n_geno], n_geno);
+
+        for (int j=0; j < n_geno; j++) site_gl[i*n_geno+j] = -1e4;
+        site_gl[i*n_geno+max_pos] = 0;
+	}
+}
+
+
+int array_max_pos(double *geno, int size) {
+	int max = -1e6;
+	int res = 0;
+
+	for (int i = 0; i < size; i++) {
+		if (geno[i] > max) {
+			res = i;
+			max = geno[i];
+		}
+	}
+	return res;
 }

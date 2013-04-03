@@ -14,6 +14,7 @@ void init_pars(params *pars) {
 	pars->max_chunk_size = 10000;
 	pars->fast_lkl = false;
 	pars->approx_EM = false;
+	pars->call_geno = false;
 	pars->max_iters = 1500;
 	pars->min_epsilon = 1e-5;
 	pars->n_threads = 1;
@@ -37,6 +38,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 			{"chunk_size", required_argument, NULL, 'c'},
 			{"fast_lkl", no_argument, NULL, 'l'},
 			{"approx_EM", no_argument, NULL, 'H'},
+			{"call_geno", no_argument, NULL, 'G'},
 			{"max_iters", required_argument, NULL, 'n'},
 			{"min_epsilon", required_argument, NULL, 'e'},
 			{"n_threads", required_argument, NULL, 'p'},
@@ -47,7 +49,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	};
 
 	int c = 0;
-	while ( (c = getopt_long_only(argc, argv, "g:x:o:i:s:c:lHn:e:p:qvd:", long_options, NULL)) != -1 )
+	while ( (c = getopt_long_only(argc, argv, "g:x:o:i:s:c:lHGn:e:p:qvd:", long_options, NULL)) != -1 )
 		switch (c) {
 		case 'g':
 			pars->in_glf = optarg;
@@ -72,6 +74,9 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 			break;
 		case 'H':
 			pars->approx_EM = true;
+			break;
+		case 'G':
+			pars->call_geno = true;
 			break;
 		case 'n':
 			pars->max_iters = atoi(optarg);

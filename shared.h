@@ -34,6 +34,7 @@ typedef struct {
 	uint64_t max_chunk_size;
 	bool fast_lkl;
 	bool approx_EM;
+	bool call_geno;
 	int max_iters;
 	double min_epsilon;
 	unsigned int n_threads;
@@ -80,6 +81,8 @@ int parse_cmd_args(int, char **, params *);
 // read_data.cpp
 int init_output(params *, out_data *);
 uint64_t read_chunk(double **, params *, uint64_t);
+void call_geno(double *, int, int);
+int array_max_pos(double *, int);
 
 // EM.cpp
 int do_EM(params *, out_data *);

@@ -48,8 +48,8 @@ int main (int argc, char **argv) {
 	}
 	if( pars->verbose >= 1 ) {
 		printf("==> Input Arguments:\n");
-		printf("\tglf file: %s\n\tinit_values: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %ld\n\tchunk_size: %ld\n\tapprox_EM: %s\n\tfast_lkl: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
-				pars->in_glf, pars->init_values, pars->out_file, pars->n_ind, pars->n_sites, pars->max_chunk_size, pars->approx_EM ? "true":"false", pars->fast_lkl ? "true":"false", pars->max_iters, pars->min_epsilon, pars->n_threads, pars->quick ? "true":"false", version, pars->verbose);
+		printf("\tglf file: %s\n\tinit_values: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %ld\n\tchunk_size: %ld\n\tfast_lkl: %s\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
+				pars->in_glf, pars->init_values, pars->out_file, pars->n_ind, pars->n_sites, pars->max_chunk_size, pars->fast_lkl ? "true":"false", pars->approx_EM ? "true":"false", pars->call_geno ? "true":"false", pars->max_iters, pars->min_epsilon, pars->n_threads, pars->quick ? "true":"false", version, pars->verbose);
 	}
 	if( pars->verbose > 4 ) printf("==> Verbose values greater than 4 for debugging purpose only. Expect large amounts of info on screen\n");
 
@@ -73,7 +73,9 @@ int main (int argc, char **argv) {
 	if(pars->n_sites == 0)
 		error("number of sites (-n_sites) missing!");
 	if(pars->approx_EM)
-		printf("==> Using approximated EM ML algorithm\n");
+		printf("==> Using approximated EM algorithm\n");
+	if(pars->call_geno)
+		printf("==> Using called genotypes based on their likelihoods\n");
 
 
 
@@ -138,6 +140,8 @@ int main (int argc, char **argv) {
 		pars->data[s] = new double[pars->n_ind * 3];
 		if( fread (pars->data[s], sizeof(double), pars->n_ind * 3, pars->in_glf_fh) != pars->n_ind * 3)
 			error("cannot read GLF file!");
+		if(pars->call_geno)
+			call_geno(pars->data[s], pars->n_ind, 3);
 	}
 #endif
 	if( pars->in_glf_fh == NULL )
@@ -174,6 +178,7 @@ int main (int argc, char **argv) {
 	if( pars->verbose >= 1 ) printf("\nFinal logLkl: %f\n", output->global_lkl);
 
 
+
 	//////////////////
 	// Print Output //
 	//////////////////
@@ -181,17 +186,16 @@ int main (int argc, char **argv) {
 	if( pars->verbose >= 1 ) printf("Printing Output...\n");
 
 	out_file = fopen(pars->out_file, "w");
-	fprintf(out_file,"Ind\tindF\tLoglkl\n");
 	for(uint16_t i = 0; i < pars->n_ind; i++)
-		fprintf(out_file,"%d\t%f\tNA\n",i+1, output->indF[i]);
-
-	if( pars->verbose >= 1 ) printf("Exiting...\n");
+		fprintf(out_file,"%f\n", output->indF[i]);
 	fclose(out_file);
+
 
 
 	//////////////////////
 	// Close Input File //
 	//////////////////////
+	if( pars->verbose >= 1 ) printf("Exiting...\n");
 #ifdef _USE_BGZF
 	bgzf_close(pars->in_glf_fh);
 #else

@@ -44,6 +44,8 @@ and check the resulting checksums.
 
 -chunk_size	INT	Size of each analysis chunck. [default: 10000]
 
+-call_geno		Assume called genotypes.
+
 -approx_EM		Use the faster approximated EM ML algorithm
 
 -fast_lkl		Enables an intra-EM LogLkl calculation.
