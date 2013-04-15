@@ -55,13 +55,15 @@ int main (int argc, char **argv) {
 
 
 
-
 	/////////////////////
 	// Check Arguments //
 	/////////////////////
 	if(pars->in_glf == NULL)
 		error("GL input file (-glf) missing!");
-	else {
+	else if( strcmp(pars->in_glf, "-") == 0 ) {
+	        pars->in_glf_type = new char[6];
+  	        pars->in_glf_type = strcat(pars->in_glf_type, "STDIN");
+	} else {
 		pars->in_glf_type = strrchr(pars->in_glf, '.');
 		if(pars->in_glf_type == NULL)
 			error("invalid file type!");
@@ -72,10 +74,6 @@ int main (int argc, char **argv) {
 		error("number of individuals (-n_ind) missing!");
 	if(pars->n_sites == 0)
 		error("number of sites (-n_sites) missing!");
-	if(pars->approx_EM)
-		printf("==> Using approximated EM algorithm\n");
-	if(pars->call_geno)
-		printf("==> Using called genotypes based on their likelihoods\n");
 
 
 
@@ -85,7 +83,7 @@ int main (int argc, char **argv) {
 	// Get file total size
 	struct stat st;
 	stat(pars->in_glf, &st);
-	if( pars->verbose >= 1 ) {
+	if( pars->verbose >= 1 && strcmp(pars->in_glf_type, "STDIN") != 0 ) {
 		if( pars->n_sites == st.st_size/sizeof(double)/pars->n_ind/3 && strcmp(pars->in_glf_type, ".glf") == 0 )
 			printf("==> UNCOMP input file (\"%s\"): number of sites (%ld) match expected file size\n", pars->in_glf_type, pars->n_sites);
 		else if( strcmp(pars->in_glf_type, ".glf") != 0 )
@@ -100,15 +98,12 @@ int main (int argc, char **argv) {
 		if( pars->verbose >= 1 ) printf("==> Fewer sites (%ld) than chunk_size (%ld). Reducing chunk size to match number of sites\n", pars->n_sites, pars->max_chunk_size);
 		pars->max_chunk_size = pars->n_sites;
 	}
-
-
 	// Calculate total number of chunks
 	pars->n_chunks = ceil( (double) pars->n_sites/ (double) pars->max_chunk_size );
 	if( pars->verbose >= 1 ) printf("==> Analysis will be run in %ld chunk(s)\n", pars->n_chunks);
 	// Alocate memory for the chunk index
 	pars->chunks_voffset = new int64_t[pars->n_chunks];
 	memset(pars->chunks_voffset, 0, pars->n_chunks*sizeof(int64_t));
-
 	// Adjust thread number to chunks
 	if(pars->n_chunks < pars->n_threads) {
 		if( pars->verbose >= 1 ) printf("==> Fewer chunks (%ld) than threads (%d). Reducing the number of threads to match number of chunks\n", pars->n_chunks, pars->n_threads);
@@ -119,20 +114,25 @@ int main (int argc, char **argv) {
 	// Open input file
 #ifdef _USE_BGZF
 	if( pars->verbose >= 1 ) printf("==> Using BGZF I/O library\n");
-	if( strcmp(pars->in_glf_type, ".bgz") != 0 )
-		error("BGZF library only supports BGZIP files!");
 	// Open BGZIP file
-	if( (pars->in_glf_fh = bgzf_open(pars->in_glf, "rb")) < 0 )
-		error("Cannot open BGZIP file!");
+	if( strcmp(pars->in_glf_type, ".bgz") == 0 ) {
+ 	        if( (pars->in_glf_fh = bgzf_open(pars->in_glf, "rb")) < 0 )
+		        error("Cannot open BGZIP file!");
+	} else
+	        error("BGZF library only supports BGZIP files!");
+
 	bgzf_set_cache_size(pars->in_glf_fh, CACHE_SIZE * 1024uL * 1024uL * 1024uL);
 #else
-	if( pars->verbose >= 1 ) printf("==> Using native I/O library\n");
-	if( strcmp(pars->in_glf_type, ".glf") != 0 )
-		error("Standard library only supports UNCOMPRESSED GLF files!");
 
+	if( pars->verbose >= 1 ) printf("==> Using native I/O library\n");
 	// Open GLF file
-	if( (pars->in_glf_fh = fopen(pars->in_glf, "rb")) == NULL )
-		error("Cannot open GLF file!");
+	if( strcmp(pars->in_glf_type, "STDIN") == 0 )
+	        pars->in_glf_fh = stdin;
+	else if( strcmp(pars->in_glf_type, ".glf") == 0 ) {
+	        if( (pars->in_glf_fh = fopen(pars->in_glf, "rb")) == NULL )
+		        error("Cannot open GLF file!");
+	} else
+	        error("Standard library only supports UNCOMPRESSED GLF files!");
 
 	// Allocate memory and read from the file
 	pars->data = new double* [pars->n_sites];

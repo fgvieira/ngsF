@@ -21,7 +21,8 @@ To compile entire package just run the Makefile:
 ### Options
 
 -glf		FILE	Input GL file. Format as 3*n_ind*n_sites doubles in binary.
-			It can be in uncompressed [default] or BGZIP format.
+			It can be uncompressed [default] or in BGZIP format. If "-" 
+			reads uncompressed stream from STDIN.
 
 -out		FILE	Output file name.
 
