@@ -30,7 +30,7 @@ To compile entire package just run the Makefile:
 
 -n_sites	INT	Total number of sites.
 
--chunk_size	INT	Size of each analysis chunck. [default: 10000]
+-chunk_size	INT	Size of each analysis chunk. [default: 10000]
 
 -call_geno		Assume called genotypes.
 
@@ -45,7 +45,7 @@ To compile entire package just run the Makefile:
 
 -init_values    CHAR    Initial values of individual F and site frequency:
  		 or	 r:     random in (0,1)
-		FILE	 e:     estimated (not recomended for low coverage data)
+		FILE	 e:     estimated (not recommended for low coverage data)
 			 u:	uniform = 0.01 [default]
 			 FILE:  read from FILE (n_ind + n_sites doubles)
 
@@ -62,13 +62,13 @@ To compile entire package just run the Makefile:
 			NOTE: For debugging use only! Do not use in any analysis.
 
 -verbose	INT	Selects verbosity level. [default: 1]
-			NOTE: Values more than 4 print large ammounts of data.
+			NOTE: Values more than 4 print large amounts of data.
 			For debugging use only!
 
 
 
 ### Input data
-As input ngsF needs a Genotype Likelihood (GL) file, formated as 3*n_ind*n_sites doubles in binary. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
+As input ngsF needs a Genotype Likelihood (GL) file, formatted as 3*n_ind*n_sites doubles in binary. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
 
 
 
@@ -77,21 +77,40 @@ An issue on iterative algorithms is the stopping criteria. ngsF implements a dua
 
 
 
-### Sugested usage
-ngsF has two different methods implemented: one true EM and an approximated EM. The latter was developed to help reduce the computation time of the former by providing more accurate initial values. Example usage:
+### Example of genotype calling analysis on inbred samples
 
-% ./ngsF -n_ind INT -glf input.glf -out file1.indF -approx_EM
+- Call SNPs (p-value < 1e-4) and get genotype likelihoods
 
-% ./ngsF -n_ind INT -glf input.glf -out file2.indF -init_values file1.indF.pars
-
+% ./angsd -bam bam_files.list -only_proper_pairs 0 -minMapQ 0 -minQ 20 -baq 1 -C 50 -ref ref_seq.fas -out input -GL 1 -doMajorMinor 1 -doGlf 3 -doPost 1 -doMaf 2 -doSNP 1 -minLRT 15.1366 -doZ 1
 
 
-### Hints
-- Dataset: as a rule of thumb, use at least 1000 high confidence SNP sites.
+- Infer per-individual inbreeding coefficients
 
-- Low coverage data: since the initial estimates are not reliable, it is recomended to use random starting points and more strict stopping criteria (eg. -init_values r -min_epsilon 1e-9).
+  1) Using true EM algorithm only
 
-- High coverage data: although F is not really usefull in the prior, it seems lower inital values perform better (-init_values u).
+  % ./ngsF -n_ind INT -glf input.glf -out output_2.indF
+
+
+  2) Using approximated EM step. This method was developed to speed up analysis by providing more accurate initial values
+
+  % ./ngsF -n_ind INT -glf input.glf -out output_1.indF -approx_EM
+
+  % ./ngsF -n_ind INT -glf input.glf -out output_2.indF -init_values output_1.indF.pars
+
+
+- Call genotypes including per-individual inbreeding coefficients in the priors
+
+% ./angsd_inbreeding -bam bam_files.list -only_proper_pairs 0 -minMapQ 0 -minQ 20 -baq 1 -C 50 -ref ref_seq.fas -indF output_2.indF -out out -GL 1 -doMajorMinor 1 -doMaf 2 -doPost 1 -doGeno 2 -doZ 1
+
+
+
+
+## Hints
+- Dataset: as a rule of thumb, use at least 1000 high confidence independent SNP sites.
+
+- Low coverage data: since the initial estimates are not reliable, it is recommended to use random starting points and more strict stopping criteria (eg. -init_values r -min_epsilon 1e-9).
+
+- High coverage data: although F is not really useful in the prior, it seems lower initial values perform better (-init_values u).
 
 - Memory Usage: By default ngsF loads the entire file into memory. However, if the file is too big and not enough memory is available, ngsF can also load chunks as they are needed. This is implemented on the BGZF library (from SAMTOOLS package), which allows for fast random access to BGZIP compressed files through an internal virtual index. This library can only deal with BGZIP files but a binary to compress them is provided.
 If you want to use this library just add -D_USE_BGZF to the FLAGS on the Makefile.
