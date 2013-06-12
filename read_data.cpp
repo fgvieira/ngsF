@@ -4,23 +4,22 @@
 
 
 int init_output(params *pars, out_data *output) {
-	double gsl_rng_max, gsl_rng_min;
     gsl_rng *r = gsl_rng_alloc(gsl_rng_taus);
     gsl_rng_set (r, time(NULL));
 
-    gsl_rng_max = 0.99;
-    gsl_rng_min = 0.01;
+    double indF_rng_max = 0.99;
+    double indF_rng_min = 0.01;
 	for(uint16_t i = 0; i < pars->n_ind; i++) {
-		output->indF[i] = ( strcmp("r", pars->init_values) == 0 ? gsl_rng_min + gsl_rng_uniform(r) * (gsl_rng_max - gsl_rng_min) : 0.01 );
+		output->indF[i] = ( strcmp("r", pars->init_values) == 0 ? indF_rng_min + gsl_rng_uniform(r) * (indF_rng_max - indF_rng_min) : 0.01 );
 		output->indF_num[i] = 0;
 		output->indF_den[i] = 0;
 		output->ind_lkl[i] = 0;
 	}
 
-	gsl_rng_max = 0.49;
-	gsl_rng_min = 0.01;
+	double freq_rng_max = 0.49;
+	double freq_rng_min = 0.01;
 	for(uint64_t s = 0; s < pars->n_sites; s++) {
-		output->site_freq[s] = ( strcmp("r", pars->init_values) == 0 ? gsl_rng_min + gsl_rng_uniform(r) * (gsl_rng_max - gsl_rng_min) : 0.01 );
+		output->site_freq[s] = ( strcmp("r", pars->init_values) == 0 ? freq_rng_min + gsl_rng_uniform(r) * (freq_rng_max - freq_rng_min) : 0.01 );
 		output->site_freq_num[s] = 0;
 		output->site_freq_den[s] = 0;
 		output->site_prob_var[s] = 1;
@@ -41,10 +40,22 @@ int init_output(params *pars, out_data *output) {
 		// Read ind F...
 		if( gzread (init_values_fh, output->indF, sizeof(double) * pars->n_ind) < 0 )
 			error("cannot read initial indF from file!");
+		for(uint16_t i = 0; i < pars->n_ind; i++) {
+		  if(output->indF[i] > indF_rng_max)
+		    output->indF[i] = indF_rng_max;
+		  if(output->indF[i] < indF_rng_min)
+		    output->indF[i] = indF_rng_min;
+		}
 
 		// Read site freqs...
 		if( gzread (init_values_fh, output->site_freq, sizeof(double) * pars->n_sites) < 0 )
 			error("cannot read initial freqs from file!");
+		for(uint64_t s = 0; s < pars->n_sites; s++) {
+		  if(output->site_freq[s] > freq_rng_max)
+		    output->site_freq[s] = freq_rng_max;
+		  if(output->site_freq[s] < freq_rng_min)
+		    output->site_freq[s] = freq_rng_min;
+		}
 
 		gzclose(init_values_fh);
 	}
