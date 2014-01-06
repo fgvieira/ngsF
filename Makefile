@@ -1,18 +1,16 @@
 CC=gcc
 CXX=g++
 
-CFLAGS = -g -Wall
-#CFLAGS = -O3
+#CFLAGS = -g -Wall
+CFLAGS = -O3
 DFLAGS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_USE_KNETFILE #-D_USE_BGZF
 LIB = -lgsl -lgslcblas -lz -lpthread
 
 all: bgzip ngsF
 
 
-
-.PHONY: bgzip
 bgzip:
-	cd bgzf; ${MAKE} bgzip
+	$(MAKE) -C bgzf bgzip
 
 
 
@@ -28,12 +26,11 @@ EM.o: EM.cpp shared.h
 shared.o: shared.cpp shared.h
 	$(CXX) $(CFLAGS) $(DFLAGS) -c shared.cpp
 
-.PHONY: ngsF
 ngsF: ngsF.cpp parse_args.o read_data.o EM.o shared.o
 	$(CXX) $(CFLAGS) $(DFLAGS) ngsF.cpp parse_args.o read_data.o EM.o shared.o bgzf/bgzf.o bgzf/knetfile.o $(LIB) -o ngsF
 
+test:
+	@echo "ngsF: test scripts not implemented yet."
 
-
-.PHONY: clean
 clean:
-	rm -f bgzf/*.o bgzf/bgzip *.o ngsF
+	@rm -f bgzf/*.o bgzf/bgzip *.o ngsF
