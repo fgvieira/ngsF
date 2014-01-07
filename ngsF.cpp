@@ -48,7 +48,7 @@ int main (int argc, char **argv) {
 	}
 	if( pars->verbose >= 1 ) {
 		printf("==> Input Arguments:\n");
-		printf("\tglf file: %s\n\tinit_values: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %ld\n\tchunk_size: %ld\n\tfast_lkl: %s\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
+		printf("\tglf file: %s\n\tinit_values: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tfast_lkl: %s\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
 				pars->in_glf, pars->init_values, pars->out_file, pars->n_ind, pars->n_sites, pars->max_chunk_size, pars->fast_lkl ? "true":"false", pars->approx_EM ? "true":"false", pars->call_geno ? "true":"false", pars->max_iters, pars->min_epsilon, pars->n_threads, pars->quick ? "true":"false", version, pars->verbose);
 	}
 	if( pars->verbose > 4 ) printf("==> Verbose values greater than 4 for debugging purpose only. Expect large amounts of info on screen\n");
@@ -85,9 +85,9 @@ int main (int argc, char **argv) {
 	stat(pars->in_glf, &st);
 	if( pars->verbose >= 1 && strcmp(pars->in_glf_type, "STDIN") != 0 ) {
 		if( pars->n_sites == st.st_size/sizeof(double)/pars->n_ind/3 && strcmp(pars->in_glf_type, ".glf") == 0 )
-			printf("==> UNCOMP input file (\"%s\"): number of sites (%ld) match expected file size\n", pars->in_glf_type, pars->n_sites);
+			printf("==> UNCOMP input file (\"%s\"): number of sites (%lu) match expected file size\n", pars->in_glf_type, pars->n_sites);
 		else if( strcmp(pars->in_glf_type, ".glf") != 0 )
-			printf("==> COMPRESSED input file (\"%s\"): number of sites (%ld) do NOT match expected file size\n", pars->in_glf_type, pars->n_sites);
+			printf("==> COMPRESSED input file (\"%s\"): number of sites (%lu) do NOT match expected file size\n", pars->in_glf_type, pars->n_sites);
 		else
 			error("wrong number of sites or invalid/corrupt file!");
 	}
@@ -95,7 +95,7 @@ int main (int argc, char **argv) {
 
 	// Adjust max_chunk_size in case of fewer sites
 	if(pars->max_chunk_size > pars->n_sites) {
-		if( pars->verbose >= 1 ) printf("==> Fewer sites (%ld) than chunk_size (%ld). Reducing chunk size to match number of sites\n", pars->n_sites, pars->max_chunk_size);
+		if( pars->verbose >= 1 ) printf("==> Fewer sites (%lu) than chunk_size (%lu). Reducing chunk size to match number of sites\n", pars->n_sites, pars->max_chunk_size);
 		pars->max_chunk_size = pars->n_sites;
 	}
 	// Calculate total number of chunks

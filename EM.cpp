@@ -33,7 +33,7 @@ int do_EM (params *pars, out_data *output) {
 			// Wait for room to launch more threads
 			while( sem_wait(&pars->launch_thread_semaph) );
 
-			if( pars->verbose >= 5 ) printf("\tChunk %ld of %ld\n", c+1, pars->n_chunks);
+			if( pars->verbose >= 5 ) printf("\tChunk %lu of %lu\n", c+1, pars->n_chunks);
 
 			// Declare structure
 			pth_params *pth_struct = new pth_params;
@@ -296,6 +296,6 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 					output->indF_num[i]/output->indF_den[i], output->indF_num[i], output->indF_den[i]);
 		}
 
-		if( pars->verbose >= 6 ) printf("\t\t%ld\t%f (%f / %f) %f\n", abs_s+1, output->site_freq_num[abs_s]/output->site_freq_den[abs_s], output->site_freq_num[abs_s], output->site_freq_den[abs_s], output->site_prob_var[abs_s]);
+		if( pars->verbose >= 6 ) printf("\t\t%lu\t%f (%f / %f) %f\n", abs_s+1, output->site_freq_num[abs_s]/output->site_freq_den[abs_s], output->site_freq_num[abs_s], output->site_freq_den[abs_s], output->site_prob_var[abs_s]);
 	}
 }

@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <error.h>
 #include "shared.h"
 
 

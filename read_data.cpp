@@ -76,7 +76,7 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 	uint64_t end_pos = start_pos + pars->max_chunk_size - 1;
 	if(end_pos >= pars->n_sites)	end_pos = pars->n_sites - 1;
 	uint64_t chunk_size = end_pos - start_pos + 1;
-	if( pars->verbose >= 6 ) printf("\tReading chunk %ld from position %ld to %ld (%ld)\n", chunk+1, start_pos, end_pos, chunk_size);
+	if( pars->verbose >= 6 ) printf("\tReading chunk %lu from position %lu to %lu (%lu)\n", chunk+1, start_pos, end_pos, chunk_size);
 
 	// Search start position
 #ifdef _USE_BGZF
