@@ -30,7 +30,7 @@ ngsF: ngsF.cpp parse_args.o read_data.o EM.o shared.o
 	$(CXX) $(CFLAGS) $(DFLAGS) ngsF.cpp parse_args.o read_data.o EM.o shared.o bgzf/bgzf.o bgzf/knetfile.o $(LIB) -o ngsF
 
 test:
-	@echo "ngsF: test scripts not implemented yet."
+	@cd examples/; sh ./test.sh 2> /dev/null; cd ../
 
 clean:
-	@rm -f bgzf/*.o bgzf/bgzip *.o ngsF
+	@rm -f bgzf/*.o bgzf/bgzip *.o ngsF examples/testF.*
