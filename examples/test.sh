@@ -6,12 +6,16 @@ NGSPOPGEN=../../ngsPopGen
 
 ##### Get genotype likelihoods
 $ANGSD/angsd -sim1 $SIM_DATA/testF.glf.gz -nInd 20 -doGlf 3 -doSNP 1 -doMaf 2 -minLRT 15 -out testF.geno -doMajorMinor 1
+
+
+
+##### Infer individual F
 N_SITES=$((`zcat testF.geno.mafs | wc -l`-1))
 zcat testF.geno.glf | ../ngsF -n_ind 20 -n_sites $N_SITES -glf - -verbose 0 -min_epsilon 0.001 -out testF.indF
 
 
 
-##### Infer individual F
+##### Get genotypes' posterior probability with inbreeding prior
 $ANGSD/angsd -sim1 $SIM_DATA/testF.glf.gz -nInd 20 -doGeno 32 -doPost 1 -doMaf 2 -doSaf 2 -out testF.indF -doMajorMinor 1 -indF testF.indF
 
 
