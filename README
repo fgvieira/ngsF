@@ -81,7 +81,7 @@ An issue on iterative algorithms is the stopping criteria. ngsF implements a dua
 
 - Call SNPs (p-value < 1e-4) and get genotype likelihoods
 
-% ./angsd -bam bam_files.list -only_proper_pairs 0 -minMapQ 0 -minQ 20 -baq 1 -C 50 -ref ref_seq.fas -out input -GL 1 -doMajorMinor 1 -doGlf 3 -doPost 1 -doMaf 2 -doSNP 1 -minLRT 15.1366 -doZ 1
+% ./angsd -bam bam_files.list -only_proper_pairs 0 -minMapQ 0 -minQ 20 -baq 1 -C 50 -ref ref_seq.fas -out input -GL 1 -doMajorMinor 1 -doGlf 3 -doPost 1 -doMaf 2 -doSNP 1 -minLRT 15.1366
 
 
 - Infer per-individual inbreeding coefficients
