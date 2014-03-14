@@ -27,11 +27,11 @@ shared.o: shared.cpp shared.h
 	$(CXX) $(CFLAGS) $(DFLAGS) -c shared.cpp
 
 ngsF: ngsF.cpp parse_args.o read_data.o EM.o shared.o
-	$(CXX) $(CFLAGS) $(DFLAGS) ngsF.cpp parse_args.o read_data.o EM.o shared.o bgzf/bgzf.o bgzf/knetfile.o $(LIB) -o bin/ngsF
+	$(CXX) $(CFLAGS) $(DFLAGS) ngsF.cpp parse_args.o read_data.o EM.o shared.o bgzf/bgzf.o bgzf/knetfile.o $(LIB) -o ngsF
 
 test:
 	@cd examples/; sh ./test.sh 2> /dev/null; cd ../
 
 clean:
-	@rm -f bgzf/*.o bgzf/bgzip *.o bin/ngsF examples/testF.*
+	@rm -f bgzf/*.o bgzf/bgzip *.o ngsF examples/testF.*
 
