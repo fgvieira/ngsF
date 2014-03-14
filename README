@@ -1,4 +1,9 @@
 
+IMPORTANT NOTE:
+These examples may not work with more recent versions of ANGSD.
+We will update everything when a stable final version of ANGSD will be available.
+In doubt, please contact the authors for questions on the usage of ngsTools with the current version of ANGSD.
+
 # ngsF
 
 ngsF is a program to estimate per-individual inbreeding coefficients, under a probabilistic framework that takes the uncertainty of genotype's assignation into account.
