@@ -1,4 +1,5 @@
+bgzf/*.o
+bgzf/bgzip
+*.o
 ngsF
-*o
-bgzf/
-examples/
+examples/testF.*
