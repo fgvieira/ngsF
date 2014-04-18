@@ -3,3 +3,4 @@ bgzf/bgzip
 *.o
 ngsF
 examples/testF.*
+examples/test.log
