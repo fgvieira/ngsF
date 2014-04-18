@@ -4,20 +4,20 @@ In case of data with inbreeding, almost all analyses can be carried out in the s
 
 In this example, we will estimate inbreeding coefficients per individual and incorporate them into the calculation of posterior probabilities. First, calculate genotype likelihoods and call SNPs:
 
-    $ANGSD/angsd -sim1 $SIM_DATA/testF.glf.gz -nInd 20 -doGlf 3 -doSNP 1 -doMaf 2 -minLRT 15 -out testF.geno -doMajorMinor 1
+    $ANGSD/angsd -sim1 $SIM_DATA/testF.glf.gz -nInd 20 -doGlf 3 -doMajorMinor 1 -doMaf 1 -SNP_pval 1e-4 -out testF.HWE
 
 Then, estimate inbreeding coefficients:
 
-    N_SITES=$((`zcat testF.geno.mafs | wc -l`-1))
-    zcat testF.geno.glf | ../ngsF -n_ind 20 -n_sites $N_SITES -glf - -verbose 0 -min_epsilon 0.001 -out testF.indF
+    N_SITES=$((`zcat testF.HWE.mafs.gz | wc -l`-1))
+    zcat testF.HWE.glf.gz | ../ngsF -n_ind 20 -n_sites $N_SITES -glf - -verbose 0 -min_epsilon 0.001 -out testF.indF
 
 We now incorporate these estimates in the calculation of genotype posterior probabilities:
 
-    $ANGSD/angsd -sim1 $SIM_DATA/testF.glf.gz -nInd 20 -doGeno 32 -doPost 1 -doMaf 2 -doSaf 2 -out testF.indF -doMajorMinor 1 -indF testF.indF
+    $ANGSD/angsd -sim1 $SIM_DATA/testF.glf.gz -nInd 20 -doMajorMinor 1 -doMaf 1 -doPost 1 -doGeno 32 -doSaf 2 -out testF.indF -indF testF.indF
 
 Finally, we can use these files to perform the same kind of analyses described in [ngsPopGen](https://github.com/mfumagalli/ngsPopGen), like the covariance matrix
 
-    gunzip testF.indF.geno.gz
+    gunzip -f testF.indF.geno.gz
     $NGSPOPGEN/ngsCovar -probfile testF.indF.geno -outfile testF.indF.covar -nind 20 -nsites $N_SITES -call 0 -sfsfile testF.indF.saf -norm 0
 
 , summary statistics
