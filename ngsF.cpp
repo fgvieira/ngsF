@@ -59,21 +59,21 @@ int main (int argc, char **argv) {
 	// Check Arguments //
 	/////////////////////
 	if(pars->in_glf == NULL)
-		error("GL input file (-glf) missing!");
+		error(__FUNCTION__,"GL input file (-glf) missing!");
 	else if( strcmp(pars->in_glf, "-") == 0 ) {
 	        pars->in_glf_type = new char[6];
   	        pars->in_glf_type = strcat(pars->in_glf_type, "STDIN");
 	} else {
 		pars->in_glf_type = strrchr(pars->in_glf, '.');
 		if(pars->in_glf_type == NULL)
-			error("invalid file type!");
+			error(__FUNCTION__,"invalid file type!");
 	}
 	if(pars->out_file == NULL)
-		error("output file (-out) missing!");
+		error(__FUNCTION__,"output file (-out) missing!");
 	if(pars->n_ind == 0)
-		error("number of individuals (-n_ind) missing!");
+		error(__FUNCTION__,"number of individuals (-n_ind) missing!");
 	if(pars->n_sites == 0)
-		error("number of sites (-n_sites) missing!");
+		error(__FUNCTION__,"number of sites (-n_sites) missing!");
 
 
 
@@ -89,7 +89,7 @@ int main (int argc, char **argv) {
 		else if( strcmp(pars->in_glf_type, ".glf") != 0 )
 			printf("==> COMPRESSED input file (\"%s\"): number of sites (%lu) do NOT match expected file size\n", pars->in_glf_type, pars->n_sites);
 		else
-			error("wrong number of sites or invalid/corrupt file!");
+			error(__FUNCTION__,"wrong number of sites or invalid/corrupt file!");
 	}
 
 
@@ -117,9 +117,9 @@ int main (int argc, char **argv) {
 	// Open BGZIP file
 	if( strcmp(pars->in_glf_type, ".bgz") == 0 ) {
  	        if( (pars->in_glf_fh = bgzf_open(pars->in_glf, "rb")) < 0 )
-		        error("Cannot open BGZIP file!");
+		        error(__FUNCTION__,"Cannot open BGZIP file!");
 	} else
-	        error("BGZF library only supports BGZIP files!");
+	        error(__FUNCTION__,"BGZF library only supports BGZIP files!");
 
 	bgzf_set_cache_size(pars->in_glf_fh, CACHE_SIZE * 1024uL * 1024uL * 1024uL);
 #else
@@ -130,22 +130,22 @@ int main (int argc, char **argv) {
 	        pars->in_glf_fh = stdin;
 	else if( strcmp(pars->in_glf_type, ".glf") == 0 ) {
 	        if( (pars->in_glf_fh = fopen(pars->in_glf, "rb")) == NULL )
-		        error("Cannot open GLF file!");
+		        error(__FUNCTION__,"Cannot open GLF file!");
 	} else
-	        error("Standard library only supports UNCOMPRESSED GLF files!");
+	        error(__FUNCTION__,"Standard library only supports UNCOMPRESSED GLF files!");
 
 	// Allocate memory and read from the file
 	pars->data = new double* [pars->n_sites];
 	for(uint64_t s = 0; s < pars->n_sites; s++) {
 		pars->data[s] = new double[pars->n_ind * 3];
 		if( fread (pars->data[s], sizeof(double), pars->n_ind * 3, pars->in_glf_fh) != pars->n_ind * 3)
-			error("cannot read GLF file!");
+			error(__FUNCTION__,"cannot read GLF file!");
 		if(pars->call_geno)
 			call_geno(pars->data[s], pars->n_ind, 3);
 	}
 #endif
 	if( pars->in_glf_fh == NULL )
-		error("cannot open GLF file!");
+		error(__FUNCTION__,"cannot open GLF file!");
 
 
 

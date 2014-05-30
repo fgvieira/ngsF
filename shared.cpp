@@ -5,10 +5,10 @@
 bool SIG_COND;
 
 
-void error(const char *msg) {
-	printf("\nERROR: %s\n", msg);
-	fprintf(stderr, "\nERROR: %s\n", msg);
-	perror("    ");
+void error(const char *func, const char *msg) {
+        printf("\n[%s] ERROR: %s\n", func, msg);
+        fprintf(stderr, "\n[%s] ERROR: %s\n", func, msg);
+	perror("\t");
 	exit(-1);
 }
 
@@ -40,13 +40,13 @@ double check_interv(double value, bool verbose) {
 	double errTol = 1e-5;
 
 	if (value != value) {
-		error("\nWARN: value is NaN!\n");
+	        error(__FUNCTION__,"value is NaN!\n");
 	} else if(value < errTol) {
 		value = 0;
-		if(verbose && value < 0) printf("\nWARN: value %f < 0!\n", value);
+		if(verbose && value < 0) printf("value %f < 0!\n", value);
 	} else if(value > 1 - errTol) {
 		value = 1;
-		if(verbose && value > 1) printf("\nWARN: value %f > 1!\n", value);
+		if(verbose && value > 1) printf("value %f > 1!\n", value);
 	}
 
 	return value;

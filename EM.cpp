@@ -58,7 +58,7 @@ int do_EM (params *pars, out_data *output) {
 
 			// Launch thread
 			int rc = pthread_create(&thread_id, &pt_attr, run_chunk, (void*) pth_struct);
-			if(rc) error("pthread_create() failed!");
+			if(rc) error(__FUNCTION__,"pthread_create() failed!");
 
 			if( pars->verbose >= 6 ) {
 				int n_free_threads = 0;
@@ -89,6 +89,8 @@ int do_EM (params *pars, out_data *output) {
 		if( pars->verbose >= 2 ) printf("\tInd F:\t");
 		for(uint16_t i = 0; i < pars->n_ind; i++) {
 			// Get new indF and check for interval...
+		  if(iter>25)
+		    printf("indF num/den: %f / %f\n",output->indF_num[i], output->indF_den[i]); fflush(stdout);
 			double new_indF = check_interv(output->indF_num[i] / output->indF_den[i], false);
 			// Calculate iter epsilon
 			est_epsilon += pow(new_indF - output->indF[i], 2);
@@ -117,7 +119,6 @@ int do_EM (params *pars, out_data *output) {
 		if( pars->verbose >= 4 ) printf("\tFreq:\t");
 		for(uint64_t s = 0; s < pars->n_sites; s++) {
 			if(output->site_freq[s] == 0) continue;
-
 			double new_site_freq = check_interv(output->site_freq_num[s] / output->site_freq_den[s], true);
 			est_epsilon += pow(new_site_freq - output->site_freq[s], 2);
 			output->site_freq[s] = new_site_freq;
@@ -225,7 +226,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 		if (p == 0) continue;
 
 		// Loop over all individuals
-		for(uint16_t i = 0; i < pars->n_ind; i++) {
+		for(uint64_t i = 0; i < pars->n_ind; i++) {
 			double F = output->indF[i];
 			double p0 = pow(1-p,2) + p*(1-p)*F;
 			double p1 = 2*p*(1-p) * (1 - F);
@@ -270,6 +271,13 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 
 					indF_num = s_num0 - s_num1 + s_num2;
 					indF_den = s_den0 - s_den1 + s_den2;
+					if( pars->verbose >= 7 )
+					  printf("site IBD: %lu %lu %f %f / %f %f %f %f %f %f %f %f %f / %f %f %f %f %f %f %f %f %f / %f %f %f %f %f %f / %f %f\n", 
+						 abs_s, i, p, F, 
+						 chunk_data[s][i*3+0], chunk_data[s][i*3+1], chunk_data[s][i*3+2], p0, p1, p2, pp0, pp1, pp2, 
+						 a0, b0, c0, a1, b1, c1, a2, b2, c2, 
+						 s_num0, s_num1, s_num2, s_den0, s_den1, s_den2, 
+						 indF_num, indF_den);
 					IBD = check_interv(indF_num/indF_den, false);
 
 				} else { // Hall et al. algorithm
@@ -289,7 +297,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 			output->indF_den[i] += indF_den;// * pow(output->site_prob_var[abs_s], 100);
 			pthread_mutex_unlock(&pars->F_lock);
 
-			if( pars->verbose >= 7 ) printf("Ind: %d\t%.10f %.10f %.10f\tfa: %f\tindF: %f\tp: %f %f %f\tpp: %f %f %f\tCum_freq: %f (%f/%f)\tCumF: %f (%f/%f)\n",
+			if( pars->verbose >= 7 ) printf("Ind: %lu\t%.10f %.10f %.10f\tfa: %f\tindF: %f\tp: %f %f %f\tpp: %f %f %f\tCum_freq: %f (%f/%f)\tCumF: %f (%f/%f)\n",
 					i+1, chunk_data[s][i*3+0], chunk_data[s][i*3+1], chunk_data[s][i*3+2], \
 					p, F, p0, p1, p2, pp0, pp1, pp2, \
 					output->site_freq_num[abs_s]/output->site_freq_den[abs_s], output->site_freq_num[abs_s], output->site_freq_den[abs_s], \

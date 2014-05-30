@@ -90,7 +90,7 @@ void *run_chunk(void *);
 void EM_iter(params *, double **, uint64_t, uint64_t, out_data *, int);
 
 // shared.cpp
-void error(const char *);
+void error(const char *, const char *);
 void handler(int);
 void catch_SIG();
 double check_interv(double, bool);

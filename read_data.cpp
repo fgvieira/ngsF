@@ -35,11 +35,11 @@ int init_output(params *pars, out_data *output) {
 
 		gzFile init_values_fh = gzopen(pars->init_values, "rb");
 		if( init_values_fh == NULL )
-			error("cannot open init_f GLF file!");
+			error(__FUNCTION__,"cannot open init_f GLF file!");
 
 		// Read ind F...
 		if( gzread (init_values_fh, output->indF, sizeof(double) * pars->n_ind) < 0 )
-			error("cannot read initial indF from file!");
+			error(__FUNCTION__,"cannot read initial indF from file!");
 		for(uint16_t i = 0; i < pars->n_ind; i++) {
 		  if(output->indF[i] > indF_rng_max)
 		    output->indF[i] = indF_rng_max;
@@ -49,7 +49,7 @@ int init_output(params *pars, out_data *output) {
 
 		// Read site freqs...
 		if( gzread (init_values_fh, output->site_freq, sizeof(double) * pars->n_sites) < 0 )
-			error("cannot read initial freqs from file!");
+			error(__FUNCTION__,"cannot read initial freqs from file!");
 		for(uint64_t s = 0; s < pars->n_sites; s++) {
 		  if(output->site_freq[s] > freq_rng_max)
 		    output->site_freq[s] = freq_rng_max;
@@ -69,7 +69,7 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 	uint64_t total_elems_read = 0;
 
 	if(chunk >= pars->n_chunks)
-		error("invalid chunk number!");
+		error(__FUNCTION__,"invalid chunk number!");
 
 	// Define chunk start and end positions
 	uint64_t start_pos = chunk * pars->max_chunk_size;
@@ -81,7 +81,7 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 	// Search start position
 #ifdef _USE_BGZF
 	if( bgzf_seek(pars->in_glf_fh, pars->chunks_voffset[chunk], SEEK_SET) < 0 )
-		error("cannot seek GLF file (BGZF)!");
+		error(__FUNCTION__,"cannot seek GLF file (BGZF)!");
 #endif
 
 	// Read data from file
@@ -96,7 +96,7 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 		uint64_t elems_read = pars->n_ind * 3;
 #endif
 		if( elems_read != pars->n_ind * 3 )
-			error("cannot read GLF file!");
+			error(__FUNCTION__,"cannot read GLF file!");
 		total_elems_read += elems_read;
 	}
 

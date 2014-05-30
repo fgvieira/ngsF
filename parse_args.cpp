@@ -11,7 +11,7 @@ void init_pars(params *pars) {
 	pars->n_sites = 0;
 	pars->n_chunks = 0;
 	pars->chunks_voffset = NULL;
-	pars->max_chunk_size = 10000;
+	pars->max_chunk_size = 100000;
 	pars->fast_lkl = false;
 	pars->approx_EM = false;
 	pars->call_geno = false;
