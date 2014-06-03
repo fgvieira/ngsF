@@ -38,6 +38,7 @@ typedef struct {
 	int max_iters;
 	double min_epsilon;
 	unsigned int n_threads;
+        uint64_t seed;
 	sem_t launch_thread_semaph;
 	sem_t running_thread_semaph;
 	pthread_mutex_t F_lock;

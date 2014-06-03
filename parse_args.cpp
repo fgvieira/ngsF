@@ -18,6 +18,7 @@ void init_pars(params *pars) {
 	pars->max_iters = 1500;
 	pars->min_epsilon = 1e-5;
 	pars->n_threads = 1;
+	pars->seed = time(NULL);
 	pars->quick = false;
 	pars->version = false;
 	pars->verbose = 1;
@@ -42,6 +43,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 			{"max_iters", required_argument, NULL, 'n'},
 			{"min_epsilon", required_argument, NULL, 'e'},
 			{"n_threads", required_argument, NULL, 'p'},
+			{"seed", required_argument, NULL, 'r'},
 			{"quick", no_argument, NULL, 'q'},
 			{"version", no_argument, NULL, 'v'},
 			{"verbose", required_argument, NULL, 'd'},
@@ -49,7 +51,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	};
 
 	int c = 0;
-	while ( (c = getopt_long_only(argc, argv, "g:x:o:i:s:c:lHGn:e:p:qvd:", long_options, NULL)) != -1 )
+	while ( (c = getopt_long_only(argc, argv, "g:x:o:i:s:c:lHGn:e:p:r:qvd:", long_options, NULL)) != -1 )
 		switch (c) {
 		case 'g':
 			pars->in_glf = optarg;
@@ -87,8 +89,11 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		case 'p':
 			pars->n_threads = atoi(optarg);
 			break;
+		case 'r':
+		        pars->seed = atoi(optarg);
+			break;
 		case 'q':
-			pars->quick = true;
+  		        pars->quick = true;
 			break;
 		case 'v':
 			pars->version = true;

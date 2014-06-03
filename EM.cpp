@@ -89,8 +89,6 @@ int do_EM (params *pars, out_data *output) {
 		if( pars->verbose >= 2 ) printf("\tInd F:\t");
 		for(uint16_t i = 0; i < pars->n_ind; i++) {
 			// Get new indF and check for interval...
-		  if(iter>25)
-		    printf("indF num/den: %f / %f\n",output->indF_num[i], output->indF_den[i]); fflush(stdout);
 			double new_indF = check_interv(output->indF_num[i] / output->indF_den[i], false);
 			// Calculate iter epsilon
 			est_epsilon += pow(new_indF - output->indF[i], 2);
@@ -163,9 +161,10 @@ int do_EM (params *pars, out_data *output) {
 		memset(pars_file, '\0', (strlen(pars->out_file)+5+1)*sizeof(char));
 		strcat(pars_file, pars->out_file); strcat(pars_file, ".pars");
 		// Write the last iteration to disk
-		FILE* last_est_pars = fopen(pars_file,"w");
-		fwrite(output->indF, sizeof(double), pars->n_ind,last_est_pars);
-		fwrite(output->site_freq, sizeof(double), pars->n_sites,last_est_pars);
+		FILE* last_est_pars = fopen(pars_file, "w");
+		fwrite(&output->global_lkl, sizeof(double), 1, last_est_pars);
+		fwrite(output->indF, sizeof(double), pars->n_ind, last_est_pars);
+		fwrite(output->site_freq, sizeof(double), pars->n_sites, last_est_pars);
 		fclose(last_est_pars);
 		free(pars_file);
 
