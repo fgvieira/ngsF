@@ -4,6 +4,9 @@
 
 
 int init_output(params *pars, out_data *output) {
+  if( pars->verbose >= 1 )
+    printf("==> Setting initial values\n");
+
         gsl_rng *r = gsl_rng_alloc(gsl_rng_taus);
         gsl_rng_set (r, pars->seed);
 
@@ -33,9 +36,18 @@ int init_output(params *pars, out_data *output) {
 		strcmp("r", pars->init_values) != 0 &&
 		strcmp("u", pars->init_values) != 0) {
 
+	  if( pars->verbose >= 1 )
+	    printf("\tReading initial values from file: %s\n", pars->init_values);
+
+	  // Check pars file size
+	  struct stat st;
+	  stat(pars->init_values, &st);
+	  if( (uint64_t) st.st_size != sizeof(double) * (1+pars->n_ind+pars->n_sites) )
+	    error(__FUNCTION__, "initial parameters file corrupted!");
+
 		gzFile init_values_fh = gzopen(pars->init_values, "rb");
 		if( init_values_fh == NULL )
-		  error(__FUNCTION__, "cannot open init_f GLF file!");
+		  error(__FUNCTION__, "cannot open initial parameters file!");
 
 		// Skip Lkl...
 		if( gzread (init_values_fh, output->indF, sizeof(double)) < 0 )
@@ -80,7 +92,8 @@ uint64_t read_chunk(double **chunk_data, params *pars, uint64_t chunk) {
 	uint64_t end_pos = start_pos + pars->max_chunk_size - 1;
 	if(end_pos >= pars->n_sites)	end_pos = pars->n_sites - 1;
 	uint64_t chunk_size = end_pos - start_pos + 1;
-	if( pars->verbose >= 6 ) printf("\tReading chunk %lu from position %lu to %lu (%lu)\n", chunk+1, start_pos, end_pos, chunk_size);
+	if( pars->verbose >= 6 )
+	  printf("\tReading chunk %lu from position %lu to %lu (%lu)\n", chunk+1, start_pos, end_pos, chunk_size);
 
 	// Search start position
 #ifdef _USE_BGZF

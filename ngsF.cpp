@@ -19,7 +19,6 @@
  *
 */
 
-#include <sys/stat.h>
 #include "shared.h"
 
 
@@ -83,13 +82,15 @@ int main (int argc, char **argv) {
 	// Get file total size
 	struct stat st;
 	stat(pars->in_glf, &st);
-	if( pars->verbose >= 1 && strcmp(pars->in_glf_type, "STDIN") != 0 ) {
-		if( pars->n_sites == st.st_size/sizeof(double)/pars->n_ind/3 && strcmp(pars->in_glf_type, ".glf") == 0 )
-			printf("==> UNCOMP input file (\"%s\"): number of sites (%lu) match expected file size\n", pars->in_glf_type, pars->n_sites);
-		else if( strcmp(pars->in_glf_type, ".glf") != 0 )
-			printf("==> COMPRESSED input file (\"%s\"): number of sites (%lu) do NOT match expected file size\n", pars->in_glf_type, pars->n_sites);
-		else
-			error(__FUNCTION__,"wrong number of sites or invalid/corrupt file!");
+	if( strcmp(pars->in_glf_type, "STDIN") != 0 ) {
+	  if( pars->n_sites == st.st_size/sizeof(double)/pars->n_ind/3 && strcmp(pars->in_glf_type, ".glf") == 0 ){
+	    if(pars->verbose >= 1)
+	      printf("==> UNCOMP input file (\"%s\"): number of sites (%lu) match expected file size\n", pars->in_glf_type, pars->n_sites);
+	  }else if( strcmp(pars->in_glf_type, ".glf") != 0 ){
+	    if( pars->verbose >= 1)
+	      printf("==> COMPRESSED input file (\"%s\"): number of sites (%lu) do NOT match expected file size\n", pars->in_glf_type, pars->n_sites);
+	  }else
+	    error(__FUNCTION__,"wrong number of sites or invalid/corrupt file!");
 	}
 
 

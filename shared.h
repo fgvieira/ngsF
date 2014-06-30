@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <zlib.h>
 #include <semaphore.h>
+#include <sys/stat.h>
 #include <sys/mman.h>
 #include "zlib.h"
 #include "bgzf/bgzf.h"
