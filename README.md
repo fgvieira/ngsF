@@ -44,6 +44,8 @@ Executables are built into the main directory. If you wish to clean all binaries
 * `-quick`: Quick run.
 * `-verbose INT`: Selects verbosity level. [1]
 
+For questions on the usage of ngsF please contact Dr Filipe G Vieira at fgarrettvieira {at} gmail {dot} com.
+
 ### Input data
 As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as 3*n_ind*n_sites doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
 
