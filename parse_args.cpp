@@ -6,6 +6,7 @@ void init_pars(params *pars) {
 	pars->in_glf = NULL;
 	pars->in_glf_type = NULL;
 	pars->init_values = NULL;
+	pars->freq_fixed = false;
 	pars->out_file = NULL;
 	pars->n_ind = 0;
 	pars->n_sites = 0;
@@ -33,6 +34,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	{
 			{"glf", required_argument, NULL, 'g'},
 			{"init_values", required_argument, NULL, 'x'},
+			{"freq_fixed", no_argument, NULL, 'f'},
 			{"out", required_argument, NULL, 'o'},
 			{"n_ind", required_argument, NULL, 'i'},
 			{"n_sites", required_argument, NULL, 's'},
@@ -51,13 +53,16 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	};
 
 	int c = 0;
-	while ( (c = getopt_long_only(argc, argv, "g:x:o:i:s:c:lHGn:e:p:r:qvd:", long_options, NULL)) != -1 )
+	while ( (c = getopt_long_only(argc, argv, "g:x:fo:i:s:c:lHGn:e:p:r:qvd:", long_options, NULL)) != -1 )
 		switch (c) {
 		case 'g':
 			pars->in_glf = optarg;
 			break;
 		case 'x':
 			pars->init_values = optarg;
+			break;
+		case 'f':
+		        pars->freq_fixed = true;
 			break;
 		case 'o':
 			pars->out_file = optarg;

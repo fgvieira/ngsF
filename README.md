@@ -2,11 +2,22 @@
 
 # ngsF
 
-`ngsF` is a program to estimate per-individual inbreeding coefficients, under a probabilistic framework that takes the uncertainty of genotype's assignation into account.
+`ngsF` is a program to estimate per-individual inbreeding coefficients under a probabilistic framework that takes the uncertainty of genotype's assignation into account.
 
+### Citation
 
+`ngsF` was published in 2013 at [Genome Research](http://genome.cshlp.org/content/23/11/1852.full), so please cite it if you use it in your work:
+
+    Vieira FG, Fumagalli M, Albrechtsen A, Nielsen R
+    Estimating inbreeding coefficients from NGS data: Impact on genotype calling and allele frequency estimation.
+    Genome Research (2013) 23: 1852-1861
 
 ### Installation
+
+`ngsF` can be easily installed but has some external dependencies:
+
+* `zlib`: v1.2.7 tested on Ubuntu
+* `md5sum`: only needed for `make test`
 
 To install the entire package just download the source code:
 
@@ -44,8 +55,6 @@ Executables are built into the main directory. If you wish to clean all binaries
 * `-quick`: Quick run.
 * `-verbose INT`: Selects verbosity level. [1]
 
-For questions on the usage of ngsF please contact Dr Filipe G Vieira at fgarrettvieira {at} gmail {dot} com.
-
 ### Input data
 As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as 3*n_ind*n_sites doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
 
@@ -68,3 +77,6 @@ Some available options are intended for debugging purposes only and should not b
 
 - Memory Usage: By default `ngsF` loads the entire file into memory. However, if the file is too big and not enough memory is available, `ngsF` can also load chunks as they are needed. This is implemented on the BGZF library (from SAMTOOLS package), which allows for fast random access to BGZIP compressed files through an internal virtual index. This library can only deal with BGZIP files but a binary to compress them is provided.
 If you want to use this library just add -D_USE_BGZF to the FLAGS on the Makefile.
+
+### Contact
+For questions on the usage of `ngsF` please contact Dr Filipe G. Vieira.

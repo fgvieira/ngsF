@@ -27,6 +27,7 @@ typedef struct {
 	char *in_glf;
 	char *in_glf_type;
 	char *init_values;
+        bool freq_fixed;
 	char *out_file;
 	uint16_t n_ind;
 	uint64_t n_sites;

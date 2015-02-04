@@ -117,9 +117,11 @@ int do_EM (params *pars, out_data *output) {
 		if( pars->verbose >= 4 ) printf("\tFreq:\t");
 		for(uint64_t s = 0; s < pars->n_sites; s++) {
 			if(output->site_freq[s] == 0) continue;
-			double new_site_freq = check_interv(output->site_freq_num[s] / output->site_freq_den[s], true);
-			est_epsilon += pow(new_site_freq - output->site_freq[s], 2);
-			output->site_freq[s] = new_site_freq;
+			if(!pars->freq_fixed){
+			  double new_site_freq = check_interv(output->site_freq_num[s] / output->site_freq_den[s], true);
+			  est_epsilon += pow(new_site_freq - output->site_freq[s], 2);
+			  output->site_freq[s] = new_site_freq;
+			}
 
 			// Reset variables...
 			output->site_freq_num[s] = 0;
@@ -232,7 +234,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 			double p2 = pow(p,2) + p*(1-p)*F;
 
 			// If initial guess assumes uniform priors
-			if(! use_prior) p0 = p1 = p2 = 1;
+			if(!use_prior) p0 = p1 = p2 = 1;
 
 			double norm = addProtect3(log(p0)+chunk_data[s][i*3+0], log(p1)+chunk_data[s][i*3+1], log(p2)+chunk_data[s][i*3+2]);
 			double pp0 = p0 * exp(chunk_data[s][i*3+0]-norm);
@@ -245,7 +247,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 			double indF_num = 0;
 			double indF_den = 0;
 			// P(IBD)
-			if(!use_prior) {
+			if(!use_prior) { //if initial guess do not use any prior
 				IBD = check_interv(1 - (pp1/(2*(1-p)*p)), false);
 				indF_num = IBD;
 				indF_den = 1;
@@ -270,7 +272,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 
 					indF_num = s_num0 - s_num1 + s_num2;
 					indF_den = s_den0 - s_den1 + s_den2;
-					if( pars->verbose >= 7 )
+					if( indF_num != indF_num || indF_den != indF_den || indF_num/indF_den != indF_num/indF_den || pars->verbose >= 7 )
 					  printf("site IBD: %lu %lu %f %f / %f %f %f %f %f %f %f %f %f / %f %f %f %f %f %f %f %f %f / %f %f %f %f %f %f / %f %f\n", 
 						 abs_s, i, p, F, 
 						 chunk_data[s][i*3+0], chunk_data[s][i*3+1], chunk_data[s][i*3+2], p0, p1, p2, pp0, pp1, pp2, 
@@ -286,10 +288,11 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 				}
 			}
 
-			// site freq
+			// Update site freq
 			output->site_freq_num[abs_s] += pp1 + pp2 * (2-IBD);
 			output->site_freq_den[abs_s] += pp1 + pp2 * (2-IBD) + pp1 + pp0*(2-IBD);
 
+			// Update indiv F
 			pthread_mutex_lock(&pars->F_lock);
 			output->ind_lkl[i] += HWE_like(chunk_data[s]+i*3, p, F);
 			output->indF_num[i] += indF_num;// * pow(output->site_prob_var[abs_s], 100);
