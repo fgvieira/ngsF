@@ -120,7 +120,7 @@ int do_EM (params *pars, out_data *output) {
 			if(!pars->freq_fixed){
 			  double new_site_freq = check_interv(output->site_freq_num[s] / output->site_freq_den[s], true);
 			  est_epsilon += pow(new_site_freq - output->site_freq[s], 2);
-			  output->site_freq[s] = new_site_freq;
+			  output->site_freq[s] = (new_site_freq > 0.99 ? 0.99 : new_site_freq);
 			}
 
 			// Reset variables...
@@ -216,7 +216,7 @@ void *run_chunk(void *pth_struct) {
 
 
 
-void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, uint64_t chunk_size, out_data *output, int use_prior) {
+void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, uint64_t chunk_size, out_data *output, int iter) {
 
 	// Loop over all sites
 	for(uint64_t s = 0; s < chunk_size; s++) {
@@ -234,7 +234,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 			double p2 = pow(p,2) + p*(1-p)*F;
 
 			// If initial guess assumes uniform priors
-			if(!use_prior) p0 = p1 = p2 = 1;
+			if(iter == 0) p0 = p1 = p2 = 1;
 
 			double norm = addProtect3(log(p0)+chunk_data[s][i*3+0], log(p1)+chunk_data[s][i*3+1], log(p2)+chunk_data[s][i*3+2]);
 			double pp0 = p0 * exp(chunk_data[s][i*3+0]-norm);
@@ -247,7 +247,7 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 			double indF_num = 0;
 			double indF_den = 0;
 			// P(IBD)
-			if(!use_prior) { //if initial guess do not use any prior
+			if(iter == 0) { //if initial guess do not use any prior
 				IBD = check_interv(1 - (pp1/(2*(1-p)*p)), false);
 				indF_num = IBD;
 				indF_den = 1;

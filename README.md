@@ -79,4 +79,4 @@ Some available options are intended for debugging purposes only and should not b
 If you want to use this library just add -D_USE_BGZF to the FLAGS on the Makefile.
 
 ### Contact
-For questions on the usage of `ngsF` please contact Dr Filipe G. Vieira.
+For questions on the usage of `ngsF` please check the [tutorial](https://github.com/fgvieira/ngsF/tree/master/examples) or contact Dr Filipe G. Vieira.
