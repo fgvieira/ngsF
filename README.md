@@ -2,7 +2,7 @@
 
 # ngsF
 
-`ngsF` is a program to estimate per-individual inbreeding coefficients under a probabilistic framework that takes the uncertainty of genotype's assignation into account.
+`ngsF` is a program to estimate per-individual inbreeding coefficients under a probabilistic framework that takes the uncertainty of genotype's assignation into account. It avoids calling genotypes by using genotype likelihoods or posterior probabilities.
 
 ### Citation
 
@@ -16,7 +16,8 @@
 
 `ngsF` can be easily installed but has some external dependencies:
 
-* `zlib`: v1.2.7 tested on Ubuntu
+* `zlib`: v1.2.7 tested on Debian 7.8 (wheezy)
+* `gsl` : v1.15 tested on Debian 7.8 (wheezy)
 * `md5sum`: only needed for `make test`
 
 To install the entire package just download the source code:
@@ -56,7 +57,7 @@ Executables are built into the main directory. If you wish to clean all binaries
 * `--verbose INT`: Selects verbosity level. [1]
 
 ### Input data
-As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as 3*n_ind*n_sites doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
+As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as __3\*n_ind\*n_sites__ doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
 
 ### Stopping Criteria
 An issue on iterative algorithms is the stopping criteria. `ngsF` implements a dual condition threshold: relative difference in log-likelihood and estimates RMSD (F and freq). As for which threshold to use, simulations show that 1e-5 seems to be a reasonable value. However, if you're dealing with low coverage data (2x-3x), it might be worth to use lower thresholds (between 1e-6 and 1e-9).
