@@ -9,8 +9,8 @@ In this example, we will estimate inbreeding coefficients per individual and inc
 Then, estimate inbreeding coefficients:
 
     N_SITES=$((`zcat testF.HWE.mafs.gz | wc -l`-1))
-    zcat testF.HWE.glf.gz | ../ngsF -n_ind 20 -n_sites $N_SITES -glf - -min_epsilon 0.001 -out testF.approx_indF -approx_EM -seed 12345 -init_values r
-    zcat testF.HWE.glf.gz | ../ngsF -n_ind 20 -n_sites $N_SITES -glf - -min_epsilon 0.001 -out testF.indF -init_values testF.approx_indF.pars
+    zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --out testF.approx_indF --approx_EM --seed 12345 --init_values r
+    zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --out testF.indF --init_values testF.approx_indF.pars
 
 We now incorporate these estimates in the calculation of genotype posterior probabilities:
 

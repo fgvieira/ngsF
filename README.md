@@ -35,25 +35,25 @@ Executables are built into the main directory. If you wish to clean all binaries
 
 ### Usage
 
-    % ./ngsF [options] -n_ind INT -s INT -glf glf/in/file -out output/file
+    % ./ngsF [options] --n_ind INT --n_sites INT --glf glf/in/file --out output/file
 
 #### Parameters
 
-* `-glf FILE`: Input GL file.
-* `-out FILE`: Output file name.
-* `-n_ind INT`: Sample size (number of individuals).
-* `-n_sites INT`: Total number of sites.
-* `-chunk_size INT`: Size of each analysis chunk. [100000]
-* `-call_geno`: Call genotypes before running analyses.
-* `-approx_EM`: Use the faster approximated EM ML algorithm
-* `-fast_lkl`: Fast EM LogLkl calculation.
-* `-init_values CHAR or FILE`: Initial values of individual F and site frequency. Can be (r)andom, (e)stimated from data, (u)niform at 0.01, or read from a FILE.
-* `-max_iters INT`: Maximum number of EM iterations. [1500]
-* `-min_epsilon FLOAT`: Maximum RMSD between iterations to assume convergence. [1e-5]
-* `-n_threads INT`: Number of threads to use. [1]
-* `-version`: Prints program version and exits.
-* `-quick`: Quick run.
-* `-verbose INT`: Selects verbosity level. [1]
+* `--glf FILE`: Input GL file.
+* `--out FILE`: Output file name.
+* `--n_ind INT`: Sample size (number of individuals).
+* `--n_sites INT`: Total number of sites.
+* `--chunk_size INT`: Size of each analysis chunk. [100000]
+* `--call_geno`: Call genotypes before running analyses.
+* `--approx_EM`: Use the faster approximated EM ML algorithm
+* `--fast_lkl`: Fast EM LogLkl calculation.
+* `--init_values CHAR or FILE`: Initial values of individual F and site frequency. Can be (r)andom, (e)stimated from data, (u)niform at 0.01, or read from a FILE.
+* `--max_iters INT`: Maximum number of EM iterations. [1500]
+* `--min_epsilon FLOAT`: Maximum RMSD between iterations to assume convergence. [1e-5]
+* `--n_threads INT`: Number of threads to use. [1]
+* `--version`: Prints program version and exits.
+* `--quick`: Quick run.
+* `--verbose INT`: Selects verbosity level. [1]
 
 ### Input data
 As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as 3*n_ind*n_sites doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
@@ -64,9 +64,9 @@ An issue on iterative algorithms is the stopping criteria. `ngsF` implements a d
 ### Debug
 Some available options are intended for debugging purposes only and should not be used in any real analysis!
 
-* `-fast_lkl`: LogLkl is calculated on each iteration, speeding up the computation (no need for between-iteration de-novo Lkl calculation). This Lkl will actually reflect the previous iteration values, and will miss all skipped sites (f == 0).
+* `--fast_lkl`: LogLkl is calculated on each iteration, speeding up the computation (no need for between-iteration de-novo Lkl calculation). This Lkl will actually reflect the previous iteration values, and will miss all skipped sites (f == 0).
 
-* `-quick`: Only computes initial "freq" and "indF" values with no EM optimization.
+* `--quick`: Only computes initial "freq" and "indF" values with no EM optimization.
 
 ## Hints
 - Dataset: as a rule of thumb, use at least 1000 high confidence independent SNP sites.

@@ -42,7 +42,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 			{"fast_lkl", no_argument, NULL, 'l'},
 			{"approx_EM", no_argument, NULL, 'H'},
 			{"call_geno", no_argument, NULL, 'G'},
-			{"max_iters", required_argument, NULL, 'n'},
+			{"max_iters", required_argument, NULL, 't'},
 			{"min_epsilon", required_argument, NULL, 'e'},
 			{"n_threads", required_argument, NULL, 'p'},
 			{"seed", required_argument, NULL, 'r'},
@@ -53,7 +53,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	};
 
 	int c = 0;
-	while ( (c = getopt_long_only(argc, argv, "g:x:fo:i:s:c:lHGn:e:p:r:qvd:", long_options, NULL)) != -1 )
+	while ( (c = getopt_long_only(argc, argv, "g:x:fo:i:s:c:lHGt:e:p:r:qvd:", long_options, NULL)) != -1 )
 		switch (c) {
 		case 'g':
 			pars->in_glf = optarg;
@@ -85,7 +85,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		case 'G':
 			pars->call_geno = true;
 			break;
-		case 'n':
+		case 't':
 			pars->max_iters = atoi(optarg);
 			break;
 		case 'e':
