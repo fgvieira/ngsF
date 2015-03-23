@@ -187,6 +187,8 @@ int main (int argc, char **argv) {
 	if( pars->verbose >= 1 ) printf("Printing Output...\n");
 
 	out_file = fopen(pars->out_file, "w");
+	if(out_file == NULL)
+	  error(__FUNCTION__,"Cannot open OUTPUT file!");
 	for(uint16_t i = 0; i < pars->n_ind; i++)
 		fprintf(out_file,"%f\n", output->indF[i]);
 	fclose(out_file);

@@ -164,6 +164,8 @@ int do_EM (params *pars, out_data *output) {
 		strcat(pars_file, pars->out_file); strcat(pars_file, ".pars");
 		// Write the last iteration to disk
 		FILE* last_est_pars = fopen(pars_file, "w");
+		if(last_est_pars == NULL)
+		  error(__FUNCTION__, "Cannot open PARS file!");
 		fwrite(&output->global_lkl, sizeof(double), 1, last_est_pars);
 		fwrite(output->indF, sizeof(double), pars->n_ind, last_est_pars);
 		fwrite(output->site_freq, sizeof(double), pars->n_sites, last_est_pars);
