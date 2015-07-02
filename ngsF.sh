@@ -29,6 +29,21 @@ ID=ngsF_$RANDOM
 args_rep=( $@ )
 args=( $@ )
 
+# Check --glf/-glf/-g argument
+in_array "--glf" "${args[@]}"
+if [[ $idx -eq 0 ]]; then
+    in_array "-glf" "${args[@]}"
+fi
+if [[ $idx -eq 0 ]]; then
+    in_array "-g" "${args[@]}"
+fi
+
+if [[ $idx -ne 0 && ${args[$idx]} == "-" ]]; then
+    echo "ERROR: this wrapper script does not support reading from STDIN"
+    exit -1
+fi
+
+
 # find --out argument
 in_array "--out" "${args[@]}"
 if [[ $idx -eq 0 ]]; then
@@ -49,7 +64,7 @@ fi
 idxINIT=$idx
 if [[ $idxINIT -eq 0 ]]; then
     idxINIT=$((${#args[@]}+1))
-    args[$((idxINIT-1))]="--init_values"
+    args+=("--init_values")
 fi
 
 
