@@ -1,7 +1,18 @@
 #!/bin/bash
 
 
-######### Functions ##########
+
+#################
+### Variables ###
+#################
+N_REP=20
+TMP_DIR=$HOME/scratch/ngsF
+
+
+
+#################
+### Functions ###
+#################
 in_array() {
     idx=""
     local CNT=0
@@ -18,16 +29,14 @@ in_array() {
 }
 
 
-########## Variables ##########
-TMP_DIR=/tmp
-N_REP=20
-ID=ngsF_$RANDOM
 
-
-
-##############################
+#######################
+### Check arguments ###
+#######################
 args_rep=( $@ )
 args=( $@ )
+ID=ngsF_$RANDOM
+mkdir -p $TMP_DIR
 
 # Check --glf/-glf/-g argument
 in_array "--glf" "${args[@]}"
@@ -69,7 +78,9 @@ fi
 
 
 
-# Run each replicate
+########################################
+### Run each replicate with aprox_EM ###
+########################################
 rm -f $TMP_DIR/$ID.lkl
 for REP in `seq -w 1 $N_REP`
 do
@@ -80,7 +91,9 @@ done
 
 
 
-# Run final
+##############################
+### Run final with true EM ###
+##############################
 REP=`sort -k 2,2 $TMP_DIR/$ID.lkl | head -n 1 | cut -f 1`
 args[$idxINIT]=$TMP_DIR/$ID.approx_EM.REP_$REP.pars
 ${0%\.sh} ${args[@]}
