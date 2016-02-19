@@ -2,9 +2,9 @@ CC=gcc
 CXX=g++
 
 #CFLAGS = -g -Wall
-CFLAGS = -O3 -Wall
+CFLAGS = -O3 -Wall $(shell pkg-config --cflags gsl) 
 DFLAGS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_USE_KNETFILE #-D_USE_BGZF
-LIB = -lgsl -lgslcblas -lz -lpthread
+LIB = $(shell pkg-config --cflags gsl) -lz -lpthread
 
 all: bgzip ngsF
 
