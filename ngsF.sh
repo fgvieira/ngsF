@@ -1,4 +1,5 @@
 #!/bin/bash
+shopt -s extglob
 
 
 
@@ -46,7 +47,10 @@ fi
 if [[ $idx -eq 0 ]]; then
     in_array "-g" "${args[@]}"
 fi
-
+if [[ $idx -eq 0 ]]; then
+    echo "ERROR: could not find argument for input files (-g / --glf)"
+    exit -1
+fi
 if [[ $idx -ne 0 && ${args[$idx]} == "-" ]]; then
     echo "ERROR: this wrapper script does not support reading from STDIN"
     exit -1
@@ -94,11 +98,14 @@ done
 ##############################
 ### Run final with true EM ###
 ##############################
-REP=`sort -k 2,2 $TMP_DIR/$ID.lkl | head -n 1 | cut -f 1`
-args[$idxINIT]=$TMP_DIR/$ID.approx_EM.REP_$REP.pars
-${0%\.sh} ${args[@]}
-
-
+if [ -s $TMP_DIR/$ID.lkl ]; then
+    BEST=`sort -k 2,2 $TMP_DIR/$ID.lkl | head -n 1 | cut -f 1`
+    args[$idxINIT]=$TMP_DIR/$ID.approx_EM.REP_$BEST.pars
+    ${0%\.sh} ${args[@]}
+else
+    echo "ERROR: no output files found"
+    exit -1
+fi
 
 # Clean-up
 rm -f $TMP_DIR/$ID.*
