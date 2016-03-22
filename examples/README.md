@@ -1,6 +1,6 @@
 # Inbreeding
 
-In case of data with inbreeding, almost all analyses can be carried out in the same fashion. Main difference is in how we use `ANGSD` and `ngsF` to estimate inbreeding coefficients and incorporate them into the analyses. Also, output from `angsd` is in log format, so all analyses should be carried using the `-islog 1` option.
+In case of data with inbreeding, almost all analyses can be carried out in the same fashion. Main difference is in how we use `ANGSD` and `ngsF` to estimate inbreeding coefficients and incorporate them into the analyses.
 
 In this example, we will estimate inbreeding coefficients per individual and incorporate them into the calculation of posterior probabilities. First, calculate genotype likelihoods and call SNPs:
 
@@ -23,7 +23,7 @@ Finally, we can use these files to perform the same kind of analyses described i
 
 , summary statistics
 
-    $NGSPOPGEN/ngsStat -npop 1 -postfiles testF.indF.saf -nsites $N_SITES -iswin 1 -nind 20 -outfile testF.indF.stat -isfold 0 -islog 1 -block_size $N_SITES
+    $NGSPOPGEN/ngsStat -npop 1 -postfiles testF.indF.saf -nsites $N_SITES -iswin 1 -nind 20 -outfile testF.indF.stat -block_size $N_SITES
 
 or the Site Frequency Spectrum, if folded:
 
@@ -35,4 +35,4 @@ or unfolded:
     N_IND=20
     cat testF.indF.saf | hexdump -v -e "$((2*N_IND+1))/8 \"%.10g\t\"\"\n\"" | perl -na -e '$sum=0; $sum+=exp($_) for @F; next if($sum==0); for $i (0..$#F){$frq[$i]+=exp($F[$i])/$sum}; END{$tsum+=$_ for @frq; $_/=$tsum for @frq; print join("\t",@frq)."\n"}' > testF.indF.saf_sum
 
-Please note that FST estimation with inbreeding cannot use a joint-SFS as a prior and therefore alternative methods, like those used for folded data in [ngsPopGen](https://github.com/mfumagalli/ngsPopGen), should be used.
+Please note that FST estimation with inbreeding cannot use a joint-SFS as a prior and therefore alternative methods should be used.
