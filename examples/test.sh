@@ -51,8 +51,9 @@ hexdump -v -s 8 -e "$((2*N_IND+1))/4 \"%.10g\t\"\"\n\"" testF.indF.saf | perl -n
 
 ##### Check MD5
 rm -f *.arg
-md5sum testF.* | sort -k 2,2 > /tmp/test.md5
-if diff /tmp/test.md5 test.md5 > /dev/null
+TMP=`mktemp`
+md5sum testF.* | sort -k 2,2 > $TMP
+if diff $TMP test.md5 > /dev/null
 then
     echo "ngsF: All tests OK!"
 else
