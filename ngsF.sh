@@ -7,7 +7,17 @@ shopt -s extglob
 ### Variables ###
 #################
 N_REP=20
-TMP_DIR=$HOME/scratch/ngsF
+# Check if ngsF is compiled
+if [[ ! -x ${0%\.sh} ]]; then
+    echo "ERROR: ngsF binary not found! Did you compile it?"
+    exit -1
+fi
+
+# Set TMP folder
+if [ -z $TMP_DIR ]; then
+    TMP_DIR=$HOME/scratch
+fi
+TMP_DIR=$TMP_DIR/ngsF_$USER
 
 
 
@@ -78,6 +88,7 @@ idxINIT=$idx
 if [[ $idxINIT -eq 0 ]]; then
     idxINIT=$((${#args[@]}+1))
     args+=("--init_values")
+    args_rep+=("--init_values")
 fi
 
 
@@ -88,6 +99,7 @@ fi
 rm -f $TMP_DIR/$ID.lkl
 for REP in `seq -w 1 $N_REP`
 do
+    args_rep[$idxINIT]="r"
     args_rep[$idxOUT]=$TMP_DIR/$ID.approx_EM.REP_$REP
     ${0%\.sh} ${args_rep[@]} --approx_EM
     hexdump -v -e '1/8 "%.10g\t" "\n"' $TMP_DIR/$ID.approx_EM.REP_$REP.pars | head -n 1 | awk -v rep=$REP '{print rep"\t"$1}' >> $TMP_DIR/$ID.lkl
