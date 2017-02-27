@@ -46,7 +46,7 @@ hexdump -v -s 8 -e "$((2*N_IND+1))/4 \"%.10g\t\"\"\n\"" testF.indF.saf | perl -n
 
 ##### Check MD5
 rm -f *.arg
-TMP=`mktemp`
+TMP=`mktemp --suffix .ngsF`
 md5sum testF.* | sort -k 2,2 > $TMP
 if diff $TMP test.md5 > /dev/null
 then
