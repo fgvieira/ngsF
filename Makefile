@@ -1,5 +1,5 @@
-CC=gcc
-CXX=g++
+CC?=gcc
+CXX?=g++
 
 #CFLAGS = -g -Wall
 CFLAGS = -O3 -Wall

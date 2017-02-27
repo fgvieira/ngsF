@@ -1,4 +1,4 @@
-CC=		gcc
+CC?=		gcc
 CFLAGS=		-Wall -O3 #-m64 #-arch ppc
 DFLAGS=		-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_USE_KNETFILE -D_CURSES_LIB=1
 KNETFILE_O=	knetfile.o
