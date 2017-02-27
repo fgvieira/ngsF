@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "zlib.h"
-#include "bgzf/bgzf.h"
+#include "htslib/bgzf.h"
 
 extern bool SIG_COND;
 
