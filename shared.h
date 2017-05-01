@@ -27,6 +27,7 @@ typedef struct {
 	char *in_glf;
 	char *in_glf_type;
 	char *init_values;
+	bool calc_LRT;
         bool freq_fixed;
 	char *out_file;
 	uint16_t n_ind;
@@ -34,7 +35,6 @@ typedef struct {
 	uint64_t n_chunks;
 	int64_t *chunks_voffset;
 	uint64_t max_chunk_size;
-	bool fast_lkl;
 	bool approx_EM;
 	bool call_geno;
 	int max_iters;

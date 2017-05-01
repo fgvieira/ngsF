@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include "version.h"
 #include "shared.h"
 
 
@@ -6,6 +7,7 @@ void init_pars(params *pars) {
 	pars->in_glf = NULL;
 	pars->in_glf_type = NULL;
 	pars->init_values = NULL;
+	pars->calc_LRT = false;
 	pars->freq_fixed = false;
 	pars->out_file = NULL;
 	pars->n_ind = 0;
@@ -13,7 +15,6 @@ void init_pars(params *pars) {
 	pars->n_chunks = 0;
 	pars->chunks_voffset = NULL;
 	pars->max_chunk_size = 100000;
-	pars->fast_lkl = false;
 	pars->approx_EM = false;
 	pars->call_geno = false;
 	pars->max_iters = 1500;
@@ -34,12 +35,12 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	{
 			{"glf", required_argument, NULL, 'g'},
 			{"init_values", required_argument, NULL, 'x'},
+			{"calc_LRT", no_argument, NULL, 'L'},
 			{"freq_fixed", no_argument, NULL, 'f'},
 			{"out", required_argument, NULL, 'o'},
 			{"n_ind", required_argument, NULL, 'i'},
 			{"n_sites", required_argument, NULL, 's'},
 			{"chunk_size", required_argument, NULL, 'c'},
-			{"fast_lkl", no_argument, NULL, 'l'},
 			{"approx_EM", no_argument, NULL, 'H'},
 			{"call_geno", no_argument, NULL, 'G'},
 			{"max_iters", required_argument, NULL, 't'},
@@ -53,7 +54,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	};
 
 	int c = 0;
-	while ( (c = getopt_long_only(argc, argv, "g:x:fo:i:s:c:lHGt:e:p:r:qvd:", long_options, NULL)) != -1 )
+	while ( (c = getopt_long_only(argc, argv, "g:x:Lfo:i:s:c:HGt:e:p:r:qvd:", long_options, NULL)) != -1 )
 		switch (c) {
 		case 'g':
 			pars->in_glf = optarg;
@@ -61,6 +62,9 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		case 'x':
 			pars->init_values = optarg;
 			break;
+		case 'L':
+                        pars->calc_LRT = true;
+                        break;
 		case 'f':
 		        pars->freq_fixed = true;
 			break;
@@ -75,9 +79,6 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 			break;
 		case 'c':
 			pars->max_chunk_size = atoi(optarg);
-			break;
-		case 'l':
-			pars->fast_lkl = true;
 			break;
 		case 'H':
 			pars->approx_EM = true;
@@ -117,5 +118,70 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		pars->init_values[1] = '\0';
 	}
 
+	// Print version
+        if( pars->version ) {
+          printf("ngsF v%s\nCompiled on %s @ %s", NGSF_VERSION, __DATE__, __TIME__);
+#ifdef _USE_BGZF
+          printf(" (BGZF library)\n");
+#else
+          printf(" (STD library)\n");
+#endif
+          exit(0);
+        }
+
+	// Print options
+        if( pars->verbose >= 1 ) {
+	  printf("==> Input Arguments:\n");
+	  printf("\tglf file: %s\n\tinit_values: %s\n\tcalc_LRT: %s\n\tfreq_fixed: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tseed:\
+ %lu\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
+		 pars->in_glf,
+		 pars->init_values,
+		 pars->calc_LRT ? "true":"false",
+		 pars->freq_fixed ? "true":"false",
+		 pars->out_file,
+		 pars->n_ind,
+		 pars->n_sites,
+		 pars->max_chunk_size,
+		 pars->approx_EM ? "true":"false",
+		 pars->call_geno ? "true":"false",
+		 pars->max_iters,
+		 pars->min_epsilon,
+		 pars->n_threads,
+		 pars->seed,
+		 pars->quick ? "true":"false",
+		 NGSF_VERSION,
+		 pars->verbose);
+	}
+	if( pars->verbose > 4 ) printf("==> Verbose values greater than 4 for debugging purpose only. Expect large amounts of info on screen\n");
+
+
+
+        /////////////////////
+        // Check Arguments //
+        /////////////////////
+	if(pars->in_glf == NULL)
+	  error(__FUNCTION__,"GL input file (-glf) missing!");
+	else if( strcmp(pars->in_glf, "-") == 0 ) {
+	  pars->in_glf_type = new char[6];
+	  pars->in_glf_type = strcat(pars->in_glf_type, "STDIN");
+        } else {
+	  pars->in_glf_type = strrchr(pars->in_glf, '.');
+	  if(pars->in_glf_type == NULL)
+	    error(__FUNCTION__,"invalid file type!");
+	}
+	if(pars->calc_LRT && (strcmp("e", pars->init_values) == 0 ||
+			      strcmp("r", pars->init_values) == 0 ||
+			      strcmp("u", pars->init_values) == 0) )
+	  error(__FUNCTION__, "output from a previous run is needed in order to calculate LRT!");
+	if(pars->calc_LRT && pars->freq_fixed)
+	  error(__FUNCTION__, "cannot calculate LRT with fixed frequencies!");
+        if(pars->out_file == NULL)
+	  error(__FUNCTION__,"output file (-out) missing!");
+        if(pars->n_ind == 0)
+	  error(__FUNCTION__,"number of individuals (-n_ind) missing!");
+        if(pars->n_sites == 0)
+	  error(__FUNCTION__,"number of sites (-n_sites) missing!");
+
+	// Return
 	return 0;
 }

@@ -33,8 +33,8 @@ int init_output(params *pars, out_data *output) {
 
 	// If initial values provided...
 	if( strcmp("e", pars->init_values) != 0 &&
-		strcmp("r", pars->init_values) != 0 &&
-		strcmp("u", pars->init_values) != 0) {
+	    strcmp("r", pars->init_values) != 0 &&
+	    strcmp("u", pars->init_values) != 0) {
 
 	  if( pars->verbose >= 1 )
 	    printf("\tReading initial values from file: %s\n", pars->init_values);
@@ -42,7 +42,7 @@ int init_output(params *pars, out_data *output) {
 	  // Check pars file size
 	  struct stat st;
 	  stat(pars->init_values, &st);
-	  if( (uint64_t) st.st_size != sizeof(double) * (1+pars->n_ind+pars->n_sites) )
+	  if( (uint64_t) st.st_size != sizeof(double) * (1+2*pars->n_ind+pars->n_sites) )
 	    error(__FUNCTION__, "initial parameters file corrupted!");
 
 		gzFile init_values_fh = gzopen(pars->init_values, "rb");
@@ -50,8 +50,10 @@ int init_output(params *pars, out_data *output) {
 		  error(__FUNCTION__, "cannot open initial parameters file!");
 
 		// Skip Lkl...
-		if( gzread (init_values_fh, output->indF, sizeof(double)) < 0 )
-		  error(__FUNCTION__, "cannot read Lkl from file!");
+		if( gzread (init_values_fh, &output->global_lkl, sizeof(double)) < 0 )
+		  error(__FUNCTION__, "cannot read global Lkl from file!");
+		if( gzread (init_values_fh, output->ind_lkl, sizeof(double) * pars->n_ind) < 0 )
+		  error(__FUNCTION__, "cannot read individual Lkl from file!");
 
 		// Read ind F...
 		if( gzread (init_values_fh, output->indF, sizeof(double) * pars->n_ind) < 0 )

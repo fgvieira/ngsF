@@ -82,10 +82,10 @@ int do_EM (params *pars, out_data *output) {
 
 
 
-		///////////////////////////////////
-		// Ind post-iteration processing //
-		///////////////////////////////////
 		est_epsilon = new_global_lkl = 0;
+		/////////////////////////////////////
+		// Indiv post-iteration processing //
+		/////////////////////////////////////
 		if( pars->verbose >= 2 ) printf("\tInd F:\t");
 		for(uint16_t i = 0; i < pars->n_ind; i++) {
 			// Get new indF and check for interval...
@@ -96,13 +96,13 @@ int do_EM (params *pars, out_data *output) {
 			new_indF = ( new_indF == 1 ? 0.9999 : new_indF );
 			output->indF[i] = new_indF;
 
-			// Calculate overall fast_lkl
+			// Calculate overall lkl
+			output->ind_lkl[i] = full_HWE_like(pars, output->site_freq, output->indF, i, 1);
 			new_global_lkl += output->ind_lkl[i];
 
 			// Reset variables...
 			output->indF_num[i] = 0;
 			output->indF_den[i] = 0;
-			output->ind_lkl[i] = 0;
 
 			// Debug
 			if( pars->verbose >= 2 ) printf("\t%.9f", output->indF[i]);
@@ -112,37 +112,37 @@ int do_EM (params *pars, out_data *output) {
 
 
 		////////////////////////////////////
-		// Site post-iteration processing //
-		////////////////////////////////////
-		if( pars->verbose >= 4 ) printf("\tFreq:\t");
-		for(uint64_t s = 0; s < pars->n_sites; s++) {
-			if(output->site_freq[s] == 0) continue;
-			if(!pars->freq_fixed){
-			  double new_site_freq = check_interv(output->site_freq_num[s] / output->site_freq_den[s], true);
-			  est_epsilon += pow(new_site_freq - output->site_freq[s], 2);
-			  output->site_freq[s] = (new_site_freq > 0.99 ? 0.99 : new_site_freq);
-			}
+                // Site post-iteration processing //
+                ////////////////////////////////////
+                if( pars->verbose >= 4 ) printf("\tFreq:\t");
+                for(uint64_t s = 0; s < pars->n_sites; s++) {
+                  if(output->site_freq[s] == 0) continue;
+                  if(!pars->freq_fixed){
+                    double new_site_freq = check_interv(output->site_freq_num[s] / output->site_freq_den[s], true);
+                    est_epsilon += pow(new_site_freq - output->site_freq[s], 2);
+                    output->site_freq[s] = (new_site_freq > 0.99 ? 0.99 : new_site_freq);
+                  }
 
-			// Reset variables...
-			output->site_freq_num[s] = 0;
-			output->site_freq_den[s] = 0;
-			output->site_prob_var[s] = output->site_tmpprob_var[s];
-			output->site_tmpprob_var[s] = 0;
+                  // Reset variables...
+                  output->site_freq_num[s] = 0;
+                  output->site_freq_den[s] = 0;
+                  output->site_prob_var[s] = output->site_tmpprob_var[s];
+                  output->site_tmpprob_var[s] = 0;
 
-			// Debug
-			if( pars->verbose >= 4 ) printf("\t%.9f", output->site_freq[s]);
-		}
-		if( pars->verbose >= 4 ) printf("\n");
+                  // Debug
+                  if( pars->verbose >= 4 ) printf("\t%.9f", output->site_freq[s]);
+                }
+                if( pars->verbose >= 4 ) printf("\n");
+
+
+
+		///////////////////////
+		// Calculate epsilon //
+		///////////////////////
+		// Parameter epsilon
 		est_epsilon = sqrt(est_epsilon)/(pars->n_ind + pars->n_sites);
-
-
-
-		/////////////////////
-		// Lkl calculation //
-		/////////////////////
-		if(!pars->fast_lkl)
-			new_global_lkl = full_HWE_like(pars, output->site_freq, output->indF, 0, pars->n_ind);
-		output->global_lkl = ((output->global_lkl == 0) ? new_global_lkl : output->global_lkl);
+		// Lkl epsilon calculation - On first iteration, since there is no global_lkl, calculate Lkl epsilon based on current lkl
+		output->global_lkl = (output->global_lkl == 0 ? new_global_lkl : output->global_lkl);
 		lkl_epsilon = (new_global_lkl - output->global_lkl)/fabs(output->global_lkl);
 		output->global_lkl = new_global_lkl;
 
@@ -167,6 +167,7 @@ int do_EM (params *pars, out_data *output) {
 		if(last_est_pars == NULL)
 		  error(__FUNCTION__, "Cannot open PARS file!");
 		fwrite(&output->global_lkl, sizeof(double), 1, last_est_pars);
+		fwrite(output->ind_lkl, sizeof(double), pars->n_ind, last_est_pars);
 		fwrite(output->indF, sizeof(double), pars->n_ind, last_est_pars);
 		fwrite(output->site_freq, sizeof(double), pars->n_sites, last_est_pars);
 		fclose(last_est_pars);
@@ -296,7 +297,6 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 
 			// Update indiv F
 			pthread_mutex_lock(&pars->F_lock);
-			output->ind_lkl[i] += HWE_like(chunk_data[s]+i*3, p, F);
 			output->indF_num[i] += indF_num;// * pow(output->site_prob_var[abs_s], 100);
 			output->indF_den[i] += indF_den;// * pow(output->site_prob_var[abs_s], 100);
 			pthread_mutex_unlock(&pars->F_lock);

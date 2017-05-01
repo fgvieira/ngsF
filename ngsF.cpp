@@ -25,7 +25,6 @@
 // Cache size in Gb (to speed-up file I/O)
 #define CACHE_SIZE 1
 
-char const *version = "1.0.0";
 
 
 int main (int argc, char **argv) {
@@ -35,44 +34,6 @@ int main (int argc, char **argv) {
 	params *pars = new params;
 	init_pars(pars);
 	parse_cmd_args(argc, argv, pars);
-	if( pars->version ) {
-		printf("ngsF v%s\nCompiled on %s @ %s", version, __DATE__, __TIME__);
-#ifdef _USE_BGZF
-		printf(" (BGZF library)\n");
-#else
-		printf(" (STD library)\n");
-#endif
-
-		exit(0);
-	}
-	if( pars->verbose >= 1 ) {
-		printf("==> Input Arguments:\n");
-		printf("\tglf file: %s\n\tinit_values: %s\n\tfreq_fixed: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tfast_lkl: %s\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tseed: %lu\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
-		       pars->in_glf, pars->init_values, pars->freq_fixed ? "true":"false", pars->out_file, pars->n_ind, pars->n_sites, pars->max_chunk_size, pars->fast_lkl ? "true":"false", pars->approx_EM ? "true":"false", pars->call_geno ? "true":"false", pars->max_iters, pars->min_epsilon, pars->n_threads, pars->seed, pars->quick ? "true":"false", version, pars->verbose);
-	}
-	if( pars->verbose > 4 ) printf("==> Verbose values greater than 4 for debugging purpose only. Expect large amounts of info on screen\n");
-
-
-
-	/////////////////////
-	// Check Arguments //
-	/////////////////////
-	if(pars->in_glf == NULL)
-		error(__FUNCTION__,"GL input file (-glf) missing!");
-	else if( strcmp(pars->in_glf, "-") == 0 ) {
-	        pars->in_glf_type = new char[6];
-  	        pars->in_glf_type = strcat(pars->in_glf_type, "STDIN");
-	} else {
-		pars->in_glf_type = strrchr(pars->in_glf, '.');
-		if(pars->in_glf_type == NULL)
-			error(__FUNCTION__,"invalid file type!");
-	}
-	if(pars->out_file == NULL)
-		error(__FUNCTION__,"output file (-out) missing!");
-	if(pars->n_ind == 0)
-		error(__FUNCTION__,"number of individuals (-n_ind) missing!");
-	if(pars->n_sites == 0)
-		error(__FUNCTION__,"number of sites (-n_sites) missing!");
 
 
 
@@ -171,7 +132,7 @@ int main (int argc, char **argv) {
 	//////////////////
 	// Analyze Data //
 	//////////////////
-	if( pars->verbose >= 1 && !pars->fast_lkl && strcmp("e", pars->init_values) != 0 ) {
+	if( pars->verbose >= 1 && strcmp("e", pars->init_values) != 0 ) {
 		printf("==> Initial LogLkl: %.15f\n", full_HWE_like(pars, output->site_freq, output->indF, 0, pars->n_ind));
 		fflush(stdout);
 	}

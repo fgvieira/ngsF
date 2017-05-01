@@ -41,34 +41,34 @@ Executables are built into the main directory. If you wish to clean all binaries
 #### Parameters
 
 * `--glf FILE`: Input GL file.
+* `--init_values CHAR or FILE`: Initial values of individual F and site frequency. Can be (r)andom, (e)stimated from data, (u)niform at 0.01, or read from a FILE.
+* `--calc_LRT`: check if estimates of `F` from a previous run (provided through `--init_values`) are significantly different from 0. These will be used for a Likelihood Ratio Test (LRT) by assuming a chi-square distribution with one degree of freedom.
+* `--freq_fixed`: assume initial MAF as fixed parameters (only estimates F)
 * `--out FILE`: Output file name.
 * `--n_ind INT`: Sample size (number of individuals).
 * `--n_sites INT`: Total number of sites.
 * `--chunk_size INT`: Size of each analysis chunk. [100000]
-* `--call_geno`: Call genotypes before running analyses.
 * `--approx_EM`: Use the faster approximated EM ML algorithm
-* `--fast_lkl`: Fast EM LogLkl calculation.
-* `--init_values CHAR or FILE`: Initial values of individual F and site frequency. Can be (r)andom, (e)stimated from data, (u)niform at 0.01, or read from a FILE.
+* `--call_geno`: Call genotypes before running analyses.
 * `--max_iters INT`: Maximum number of EM iterations. [1500]
 * `--min_epsilon FLOAT`: Maximum RMSD between iterations to assume convergence. [1e-5]
 * `--n_threads INT`: Number of threads to use. [1]
-* `--version`: Prints program version and exits.
+* `--seed`: Set seed for random number generator.
 * `--quick`: Quick run.
+* `--version`: Prints program version and exits.
 * `--verbose INT`: Selects verbosity level. [1]
 
 ### Input data
 As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as __3\*n_ind\*n_sites__ doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
 
 ### Ouput files
-`ngsF` prints out two files: the output file (specified with option `--out`) and the parameters file (the same name of output file with suffix `.pars`). The output file is a text file with the per-individual inbreeding coefficients, one per line. The parameters file is a binary file storing, as doubles, the final parameters, namely global log-likelihood (1), per-individual log-likelihood (N_IND), and per-site minor allele frequencies (N_SITES).
+`ngsF` prints out two files: the output file (specified with option `--out`) and the parameters file (same name plus the suffix `.pars`). The output file is a text file with the per-individual inbreeding coefficients, one per line. The parameters file is a binary file storing, as doubles, the final parameters, namely global log-likelihood (1), per-individual log-likelihood (N_IND), per-individual inbreeding coefficients (N_IND), and per-site minor allele frequencies (N_SITES).
 
 ### Stopping Criteria
 An issue on iterative algorithms is the stopping criteria. `ngsF` implements a dual condition threshold: relative difference in log-likelihood and estimates RMSD (F and freq). As for which threshold to use, simulations show that 1e-5 seems to be a reasonable value. However, if you're dealing with low coverage data (2x-3x), it might be worth to use lower thresholds (between 1e-6 and 1e-9).
 
 ### Debug
 Some available options are intended for debugging purposes only and should not be used in any real analysis!
-
-* `--fast_lkl`: LogLkl is calculated on each iteration, speeding up the computation (no need for between-iteration de-novo Lkl calculation). This Lkl will actually reflect the previous iteration values, and will miss all skipped sites (f == 0).
 
 * `--quick`: Only computes initial "freq" and "indF" values with no EM optimization.
 
