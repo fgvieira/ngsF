@@ -8,6 +8,8 @@ void init_pars(params *pars) {
 	pars->in_glf_type = NULL;
 	pars->init_values = NULL;
 	pars->calc_LRT = false;
+	pars->_ind_lkl = NULL;
+	pars->_global_lkl = 0;
 	pars->freq_fixed = false;
 	pars->out_file = NULL;
 	pars->n_ind = 0;
@@ -18,6 +20,7 @@ void init_pars(params *pars) {
 	pars->approx_EM = false;
 	pars->call_geno = false;
 	pars->max_iters = 1500;
+	pars->min_iters = 10;
 	pars->min_epsilon = 1e-5;
 	pars->n_threads = 1;
 	pars->seed = time(NULL);
@@ -132,8 +135,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	// Print options
         if( pars->verbose >= 1 ) {
 	  printf("==> Input Arguments:\n");
-	  printf("\tglf file: %s\n\tinit_values: %s\n\tcalc_LRT: %s\n\tfreq_fixed: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tseed:\
- %lu\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
+	  printf("\tglf file: %s\n\tinit_values: %s\n\tcalc_LRT: %s\n\tfreq_fixed: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tseed: %lu\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
 		 pars->in_glf,
 		 pars->init_values,
 		 pars->calc_LRT ? "true":"false",
@@ -145,6 +147,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		 pars->approx_EM ? "true":"false",
 		 pars->call_geno ? "true":"false",
 		 pars->max_iters,
+		 pars->min_iters,
 		 pars->min_epsilon,
 		 pars->n_threads,
 		 pars->seed,
@@ -169,12 +172,18 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	  if(pars->in_glf_type == NULL)
 	    error(__FUNCTION__,"invalid file type!");
 	}
-	if(pars->calc_LRT && (strcmp("e", pars->init_values) == 0 ||
-			      strcmp("r", pars->init_values) == 0 ||
-			      strcmp("u", pars->init_values) == 0) )
-	  error(__FUNCTION__, "output from a previous run is needed in order to calculate LRT!");
-	if(pars->calc_LRT && pars->freq_fixed)
-	  error(__FUNCTION__, "cannot calculate LRT with fixed frequencies!");
+	if(pars->calc_LRT){
+	  /*
+	  if(strcmp("e", pars->init_values) == 0 ||
+	     strcmp("r", pars->init_values) == 0 ||
+	     strcmp("u", pars->init_values) == 0)
+	    error(__FUNCTION__, "output from a previous run is needed in order to calculate LRT!");
+	  */
+	  if(pars->freq_fixed)
+	    error(__FUNCTION__, "cannot calculate LRT with fixed frequencies!");
+	  if(pars->approx_EM)
+	    error(__FUNCTION__, "approximate EM algorithm has no effect on estimating MAFs!");
+	}
         if(pars->out_file == NULL)
 	  error(__FUNCTION__,"output file (-out) missing!");
         if(pars->n_ind == 0)

@@ -49,10 +49,10 @@ int init_output(params *pars, out_data *output) {
 		if( init_values_fh == NULL )
 		  error(__FUNCTION__, "cannot open initial parameters file!");
 
-		// Skip Lkl...
-		if( gzread (init_values_fh, &output->global_lkl, sizeof(double)) < 0 )
+		// Read Lkl...
+		if( gzread (init_values_fh, &pars->_global_lkl, sizeof(double)) < 0 )
 		  error(__FUNCTION__, "cannot read global Lkl from file!");
-		if( gzread (init_values_fh, output->ind_lkl, sizeof(double) * pars->n_ind) < 0 )
+		if( gzread (init_values_fh, pars->_ind_lkl, sizeof(double) * pars->n_ind) < 0 )
 		  error(__FUNCTION__, "cannot read individual Lkl from file!");
 
 		// Read ind F...

@@ -16,8 +16,14 @@ $ANGSD/angsd -glf $SIM_DATA/testF.glf.gz -fai $SIM_DATA/testAF.ANC.fas.fai -nInd
 
 ##### Infer individual F
 N_SITES=$((`zcat testF.HWE.mafs.gz | wc -l`-1))
-zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --out testF.approx_indF --approx_EM --seed 12345 --init_values r 1>&2
-zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --out testF.indF --init_values testF.approx_indF.pars 1>&2
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values u --out testF.u_approx_indF --approx_EM 1>&2
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values e --out testF.e_approx_indF --approx_EM 1>&2
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values u --out testF.u_indF 1>&2
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values e --out testF.e_indF 1>&2
+
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values r                      --out testF.approx_indF --approx_EM --seed 12345 1>&2
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values testF.approx_indF.pars --out testF.indF 1>&2
+zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --init_values testF.indF.pars        --out testF.LRT_indF --calc_LRT 1>&2
 
 
 

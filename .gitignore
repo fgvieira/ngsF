@@ -1,6 +1,5 @@
-bgzf/*.o
-bgzf/bgzip
 *.o
 ngsF
+htslib/bgzip
 examples/testF.*
 examples/test.log

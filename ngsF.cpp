@@ -19,6 +19,7 @@
  *
 */
 
+#include <gsl/gsl_cdf.h>
 #include "shared.h"
 
 
@@ -124,18 +125,20 @@ int main (int argc, char **argv) {
 	output->indF_num = new double[pars->n_ind];
 	output->indF_den = new double[pars->n_ind];
 	output->ind_lkl = new double[pars->n_ind];
+
+	pars->_ind_lkl = new double[pars->n_ind];
 	// Initialize output
 	init_output(pars, output);
+	// LRT tweaks
+        if(pars->calc_LRT)
+          for(uint16_t i = 0; i < pars->n_ind; i++)
+            output->indF[i] = 0;
 
 
 
 	//////////////////
 	// Analyze Data //
 	//////////////////
-	if( pars->verbose >= 1 && strcmp("e", pars->init_values) != 0 ) {
-		printf("==> Initial LogLkl: %.15f\n", full_HWE_like(pars, output->site_freq, output->indF, 0, pars->n_ind));
-		fflush(stdout);
-	}
 	do_EM(pars, output);
 	if( pars->verbose >= 1 ) printf("\nFinal logLkl: %f\n", output->global_lkl);
 
@@ -149,10 +152,28 @@ int main (int argc, char **argv) {
 
 	out_file = fopen(pars->out_file, "w");
 	if(out_file == NULL)
-	  error(__FUNCTION__,"Cannot open OUTPUT file!");
+	  error(__FUNCTION__,"Cannot create OUTPUT file!");
 	for(uint16_t i = 0; i < pars->n_ind; i++)
-		fprintf(out_file,"%f\n", output->indF[i]);
+	  fprintf(out_file,"%f\n", output->indF[i]);
 	fclose(out_file);
+
+	if(pars->calc_LRT && 
+	   strcmp("e", pars->init_values) != 0 &&
+	   strcmp("r", pars->init_values) != 0 &&
+	   strcmp("u", pars->init_values) != 0) {
+
+	  FILE *out_file;
+	  if( pars->verbose >= 1 ) printf("Printing LRT...\n");
+
+	  strcat(pars->out_file, ".lrt");
+	  out_file = fopen(pars->out_file, "w");
+	  if(out_file == NULL)
+	    error(__FUNCTION__,"Cannot create LRT file!");
+	  fprintf(out_file,"%f\t%f\t%.10f\n", pars->_global_lkl, output->global_lkl, gsl_cdf_chisq_Q( 2*(pars->_global_lkl - output->global_lkl), 1) );
+	  for(uint16_t i = 0; i < pars->n_ind; i++)
+	    fprintf(out_file,"%f\t%f\t%.10f\n", pars->_ind_lkl[i], output->ind_lkl[i], gsl_cdf_chisq_Q( 2*(pars->_ind_lkl[i] - output->ind_lkl[i]), 1) );
+	  fclose(out_file);
+	}
 
 
 

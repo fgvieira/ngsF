@@ -8,21 +8,26 @@ int do_EM (params *pars, out_data *output) {
 	SIG_COND = true;
 	catch_SIG();
 
-	int iter = ( strcmp("e", pars->init_values) == 0 ? 0 : 1);
-	double new_global_lkl = 0;
+	int iter = ( strcmp("e", pars->init_values) == 0 ? 0 : 1 );
 	double lkl_epsilon = 0;
 	double est_epsilon = 0;
-	sem_init(&pars->launch_thread_semaph, 0, pars->n_threads);
-	sem_init(&pars->running_thread_semaph, 0, 0); //To avoid warnings from Valgrind
-	sem_init(&pars->running_thread_semaph, 0, -pars->n_chunks);
-	pthread_mutex_init(&pars->F_lock, NULL);
+	sem_init(&pars->_launch_thread_semaph, 0, pars->n_threads);
+	sem_init(&pars->_running_thread_semaph, 0, 0); // To avoid warnings from Valgrind
+	sem_init(&pars->_running_thread_semaph, 0, -pars->n_chunks);
+	pthread_mutex_init(&pars->_F_lock, NULL);
 
-	while( (est_epsilon > pars->min_epsilon || lkl_epsilon > pars->min_epsilon || iter <= 10) && iter <= pars->max_iters && SIG_COND ) {
-
-		time_t iter_start = time(NULL);
+	while( (est_epsilon > pars->min_epsilon || lkl_epsilon > pars->min_epsilon || iter <= pars->min_iters) && iter <= pars->max_iters && SIG_COND ) {
+	        // Print of initial Lkl
+	        if( iter == 1 && pars->verbose >= 1 ) {
+		  output->global_lkl = full_HWE_like(pars, output->site_freq, output->indF, 0, pars->n_ind);
+		  printf("==> Initial LogLkl: %.15f\n", output->global_lkl);
+		  fflush(stdout);
+		}
 
 		// Next Iteration...
-		if( pars->verbose >= 1 ) printf("\nIteration %d:\n", iter);
+		time_t iter_start = time(NULL);
+		if( iter > 0 && pars->verbose >= 1 )
+		  printf("\nIteration %d:\n", iter);
 
 
 
@@ -31,7 +36,7 @@ int do_EM (params *pars, out_data *output) {
 		////////////////////////////////
 		for(uint64_t c = 0; c < pars->n_chunks; c++) {
 			// Wait for room to launch more threads
-			while( sem_wait(&pars->launch_thread_semaph) );
+			while( sem_wait(&pars->_launch_thread_semaph) );
 
 			if( pars->verbose >= 5 ) printf("\tChunk %lu of %lu\n", c+1, pars->n_chunks);
 
@@ -62,7 +67,7 @@ int do_EM (params *pars, out_data *output) {
 
 			if( pars->verbose >= 6 ) {
 				int n_free_threads = 0;
-				sem_getvalue(&pars->launch_thread_semaph, &n_free_threads);
+				sem_getvalue(&pars->_launch_thread_semaph, &n_free_threads);
 				printf("Thread launched! Available slots: %d\n", n_free_threads);
 			}
 			fflush(stdout);
@@ -75,14 +80,14 @@ int do_EM (params *pars, out_data *output) {
 		////////////////////////////////////
 		int n_free_threads = 0;
 		do {
-			while( sem_wait(&pars->running_thread_semaph) );
-			sem_getvalue(&pars->launch_thread_semaph, &n_free_threads);
+			while( sem_wait(&pars->_running_thread_semaph) );
+			sem_getvalue(&pars->_launch_thread_semaph, &n_free_threads);
 			if( pars->verbose >= 6 ) printf("Waiting for all threads to finish: %d\n", pars->n_threads - n_free_threads);
 		}while(n_free_threads < (int) pars->n_threads);
 
 
 
-		est_epsilon = new_global_lkl = 0;
+		est_epsilon = 0;
 		/////////////////////////////////////
 		// Indiv post-iteration processing //
 		/////////////////////////////////////
@@ -90,15 +95,14 @@ int do_EM (params *pars, out_data *output) {
 		for(uint16_t i = 0; i < pars->n_ind; i++) {
 			// Get new indF and check for interval...
 			double new_indF = check_interv(output->indF_num[i] / output->indF_den[i], false);
+			// If LRT, do not estimate indF (it is fixed)
+			if(pars->calc_LRT)
+			  new_indF = output->indF[i];
 			// Calculate iter epsilon
 			est_epsilon += pow(new_indF - output->indF[i], 2);
 			// Store new indF
 			new_indF = ( new_indF == 1 ? 0.9999 : new_indF );
 			output->indF[i] = new_indF;
-
-			// Calculate overall lkl
-			output->ind_lkl[i] = full_HWE_like(pars, output->site_freq, output->indF, i, 1);
-			new_global_lkl += output->ind_lkl[i];
 
 			// Reset variables...
 			output->indF_num[i] = 0;
@@ -136,20 +140,24 @@ int do_EM (params *pars, out_data *output) {
 
 
 
-		///////////////////////
-		// Calculate epsilon //
-		///////////////////////
+		///////////////////
+		// Calculate Lkl //
+		///////////////////
+		double new_global_lkl = 0;
+		for(uint16_t i = 0; i < pars->n_ind; i++) {
+		  output->ind_lkl[i] = full_HWE_like(pars, output->site_freq, output->indF, i, 1);
+		  new_global_lkl += output->ind_lkl[i];
+		}
 		// Parameter epsilon
 		est_epsilon = sqrt(est_epsilon)/(pars->n_ind + pars->n_sites);
 		// Lkl epsilon calculation - On first iteration, since there is no global_lkl, calculate Lkl epsilon based on current lkl
-		output->global_lkl = (output->global_lkl == 0 ? new_global_lkl : output->global_lkl);
 		lkl_epsilon = (new_global_lkl - output->global_lkl)/fabs(output->global_lkl);
 		output->global_lkl = new_global_lkl;
 
-
-		if( pars->verbose >= 1 ) {
-			time_t iter_end = time(NULL);
-			printf("\tLogLkl: %.15f\t epsilon: %.15f %.15f\ttime: %.0f (s)\n", output->global_lkl, lkl_epsilon, est_epsilon, difftime(iter_end, iter_start) );
+		// Print iteration info
+		if( iter > 0 && pars->verbose >= 1 ) {
+		  time_t iter_end = time(NULL);
+		  printf("\tLogLkl: %.15f\t epsilon: %.15f %.15f\ttime: %.0f (s)\n", output->global_lkl, lkl_epsilon, est_epsilon, difftime(iter_end, iter_start) );
 		}
 		iter++;
 		fflush(stdout);
@@ -174,6 +182,10 @@ int do_EM (params *pars, out_data *output) {
 		free(pars_file);
 
 
+
+		///////////////
+		// For debug //
+		///////////////
 		if( pars->quick ) break;
 	}
 
@@ -193,15 +205,15 @@ void *run_chunk(void *pth_struct) {
 	EM_iter(p->pars, p->chunk_data, p->chunk_abs_start_pos, p->chunk_size, p->output, p->iter);
 
 	// Signal semaphores
-	if( sem_post(&p->pars->launch_thread_semaph) )
+	if( sem_post(&p->pars->_launch_thread_semaph) )
 		printf("WARN: launch thread semaphore post failed!\n");
-	if( sem_post(&p->pars->running_thread_semaph) )
+	if( sem_post(&p->pars->_running_thread_semaph) )
 		printf("WARN: running thread semaphore post failed!\n");
 
 	// Debug
 	if( p->pars->verbose >= 6 ) {
 		int n_free_threads = 0;
-		sem_getvalue(&p->pars->launch_thread_semaph, &n_free_threads);
+		sem_getvalue(&p->pars->_launch_thread_semaph, &n_free_threads);
 		printf("Thread finished! Still running: %d\n", p->pars->n_threads - n_free_threads);
 	}
 
@@ -296,16 +308,17 @@ void EM_iter(params *pars, double **chunk_data, uint64_t chunk_abs_start_pos, ui
 			output->site_freq_den[abs_s] += pp1 + pp2 * (2-IBD) + pp1 + pp0*(2-IBD);
 
 			// Update indiv F
-			pthread_mutex_lock(&pars->F_lock);
+			pthread_mutex_lock(&pars->_F_lock);
 			output->indF_num[i] += indF_num;// * pow(output->site_prob_var[abs_s], 100);
 			output->indF_den[i] += indF_den;// * pow(output->site_prob_var[abs_s], 100);
-			pthread_mutex_unlock(&pars->F_lock);
+			pthread_mutex_unlock(&pars->_F_lock);
 
-			if( pars->verbose >= 7 ) printf("Ind: %lu\t%.10f %.10f %.10f\tfa: %f\tindF: %f\tp: %f %f %f\tpp: %f %f %f\tCum_freq: %f (%f/%f)\tCumF: %f (%f/%f)\n",
-					i+1, chunk_data[s][i*3+0], chunk_data[s][i*3+1], chunk_data[s][i*3+2], \
-					p, F, p0, p1, p2, pp0, pp1, pp2, \
-					output->site_freq_num[abs_s]/output->site_freq_den[abs_s], output->site_freq_num[abs_s], output->site_freq_den[abs_s], \
-					output->indF_num[i]/output->indF_den[i], output->indF_num[i], output->indF_den[i]);
+			if( pars->verbose >= 7 )
+			  printf("Ind: %lu\t%.10f %.10f %.10f\tmaf: %f\tindF: %f\tp: %f %f %f\tpp: %f %f %f\tCum_freq: %f (%f/%f)\tCumF: %f (%f/%f)\n",
+				 i+1, chunk_data[s][i*3+0], chunk_data[s][i*3+1], chunk_data[s][i*3+2], \
+				 p, F, p0, p1, p2, pp0, pp1, pp2,	\
+				 output->site_freq_num[abs_s]/output->site_freq_den[abs_s], output->site_freq_num[abs_s], output->site_freq_den[abs_s], \
+				 output->indF_num[i]/output->indF_den[i], output->indF_num[i], output->indF_den[i]);
 		}
 
 		if( pars->verbose >= 6 ) printf("\t\t%lu\t%f (%f / %f) %f\n", abs_s+1, output->site_freq_num[abs_s]/output->site_freq_den[abs_s], output->site_freq_num[abs_s], output->site_freq_den[abs_s], output->site_prob_var[abs_s]);

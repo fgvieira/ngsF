@@ -41,8 +41,8 @@ Executables are built into the main directory. If you wish to clean all binaries
 #### Parameters
 
 * `--glf FILE`: Input GL file.
-* `--init_values CHAR or FILE`: Initial values of individual F and site frequency. Can be (r)andom, (e)stimated from data, (u)niform at 0.01, or read from a FILE.
-* `--calc_LRT`: check if estimates of `F` from a previous run (provided through `--init_values`) are significantly different from 0. These will be used for a Likelihood Ratio Test (LRT) by assuming a chi-square distribution with one degree of freedom.
+* `--init_values CHAR or FILE`: Initial values of individual F and site frequency. Can be (r)andom, (e)stimated from data assuming a uniform prior, (u)niform at 0.01, or read from a FILE.
+* `--calc_LRT`: estimate MAFs and calculate lkl assuming `F=0` (H0; null hypothesis) for a Likelihood Ratio Test (LRT); if parameters from a previous run (H1; alternative hypothesis) are provided (through `--init_values`), checks if estimates of `F` are significantly different from 0 through a LRT assuming a chi-square distribution with one degree of freedom.
 * `--freq_fixed`: assume initial MAF as fixed parameters (only estimates F)
 * `--out FILE`: Output file name.
 * `--n_ind INT`: Sample size (number of individuals).
@@ -51,6 +51,7 @@ Executables are built into the main directory. If you wish to clean all binaries
 * `--approx_EM`: Use the faster approximated EM ML algorithm
 * `--call_geno`: Call genotypes before running analyses.
 * `--max_iters INT`: Maximum number of EM iterations. [1500]
+* `--min_iters INT`: Minimum number of EM iterations. [10]
 * `--min_epsilon FLOAT`: Maximum RMSD between iterations to assume convergence. [1e-5]
 * `--n_threads INT`: Number of threads to use. [1]
 * `--seed`: Set seed for random number generator.
@@ -62,7 +63,7 @@ Executables are built into the main directory. If you wish to clean all binaries
 As input `ngsF` needs a Genotype Likelihood (GL) file, formatted as __3\*n_ind\*n_sites__ doubles in binary. It can be uncompressed [default] or in BGZIP format. If "-", reads uncompressed stream from STDIN. Currently, all sites in the file must be variable, so a previous SNP calling step is needed.
 
 ### Ouput files
-`ngsF` prints out two files: the output file (specified with option `--out`) and the parameters file (same name plus the suffix `.pars`). The output file is a text file with the per-individual inbreeding coefficients, one per line. The parameters file is a binary file storing, as doubles, the final parameters, namely global log-likelihood (1), per-individual log-likelihood (N_IND), per-individual inbreeding coefficients (N_IND), and per-site minor allele frequencies (N_SITES).
+`ngsF` prints out two (or three) output files: the output file (specified with option `--out`), the parameters file (same name plus the suffix `.pars`), and (if `--calc_LRT` and `--init_values` have been specified) the LRT file (same name plus the suffis `.lrt`). The output file is a text file with the per-individual inbreeding coefficients, one per line. The parameters file is a binary file storing, as doubles, the final parameters, namely global log-likelihood (1), per-individual log-likelihood (N_IND), per-individual inbreeding coefficients (N_IND), and per-site minor allele frequencies (N_SITES). The LRT file is a text file with the global and per-individual likelihoods for H1 (alternative hypothesis; 1st column), H0 (null hypothesis; 2nd column), and p-value for rejection of H0 (following a chi2 distribution adn 1 degree of freedom; 3rd column).
 
 ### Stopping Criteria
 An issue on iterative algorithms is the stopping criteria. `ngsF` implements a dual condition threshold: relative difference in log-likelihood and estimates RMSD (F and freq). As for which threshold to use, simulations show that 1e-5 seems to be a reasonable value. However, if you're dealing with low coverage data (2x-3x), it might be worth to use lower thresholds (between 1e-6 and 1e-9).
@@ -70,6 +71,7 @@ An issue on iterative algorithms is the stopping criteria. `ngsF` implements a d
 ### Debug
 Some available options are intended for debugging purposes only and should not be used in any real analysis!
 
+* `--verbose`: verbose values above 4
 * `--quick`: Only computes initial "freq" and "indF" values with no EM optimization.
 
 ## Hints

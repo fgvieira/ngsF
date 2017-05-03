@@ -28,7 +28,9 @@ typedef struct {
 	char *in_glf_type;
 	char *init_values;
 	bool calc_LRT;
-        bool freq_fixed;
+	double *_ind_lkl;
+	double _global_lkl;
+	bool freq_fixed;
 	char *out_file;
 	uint16_t n_ind;
 	uint64_t n_sites;
@@ -38,12 +40,13 @@ typedef struct {
 	bool approx_EM;
 	bool call_geno;
 	int max_iters;
+	int min_iters;
 	double min_epsilon;
 	unsigned int n_threads;
-        uint64_t seed;
-	sem_t launch_thread_semaph;
-	sem_t running_thread_semaph;
-	pthread_mutex_t F_lock;
+	uint64_t seed;
+	sem_t _launch_thread_semaph;
+	sem_t _running_thread_semaph;
+	pthread_mutex_t _F_lock;
 	bool quick;
 	bool version;
 	unsigned int verbose;
