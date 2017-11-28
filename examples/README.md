@@ -12,7 +12,7 @@ Then, estimate inbreeding coefficients:
     zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --out testF.approx_indF --approx_EM --seed 12345 --init_values r
     zcat testF.HWE.glf.gz | ../ngsF --n_ind 20 --n_sites $N_SITES --glf - --min_epsilon 0.001 --out testF.indF --init_values testF.approx_indF.pars
 
-We now incorporate these estimates in the calculation of genotype posterior probabilities:
+In the above example, we run `ngsF` twice to speed-up the analyses. `ngsF` has two algorithms implemented (check manuscript for details), the main EM algorithm (that is very slow) and an approximated (not always converge to the maxima) method. Here I run the approximated method to get some reasonable estimates of the parameters, and then use these as initial values for the main (and slower) algorithm. This is just to speed up things and you can just use the main algorithm if you prefer (don't use just the approximated one!). One thing to keep in mind is that, even though I ran `ngsF` once (for sake of clarity), it should be run several times to avoid convergence to local maxima. We now incorporate these estimates in the calculation of genotype posterior probabilities:
 
     $ANGSD/angsd -glf $SIM_DATA/testF.glf.gz -fai $SIM_DATA/testAF.ANC.fai -anc $SIM_DATA/testAF.ANC.fas -nInd 20 -doMajorMinor 1 -doMaf 1 -doPost 1 -doGeno 32 -doSaf 2 -indF testF.indF -out testF.indF
 
