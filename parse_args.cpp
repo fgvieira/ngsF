@@ -25,7 +25,6 @@ void init_pars(params *pars) {
 	pars->n_threads = 1;
 	pars->seed = time(NULL);
 	pars->quick = false;
-	pars->version = false;
 	pars->verbose = 1;
 }
 
@@ -51,13 +50,12 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 			{"n_threads", required_argument, NULL, 'p'},
 			{"seed", required_argument, NULL, 'r'},
 			{"quick", no_argument, NULL, 'q'},
-			{"version", no_argument, NULL, 'v'},
 			{"verbose", required_argument, NULL, 'd'},
 			{0, 0, 0, 0}
 	};
 
 	int c = 0;
-	while ( (c = getopt_long_only(argc, argv, "g:x:Lfo:i:s:c:HGt:e:p:r:qvd:", long_options, NULL)) != -1 )
+	while ( (c = getopt_long_only(argc, argv, "g:x:Lfo:i:s:c:HGt:e:p:r:qd:", long_options, NULL)) != -1 )
 		switch (c) {
 		case 'g':
 			pars->in_glf = optarg;
@@ -104,9 +102,6 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		case 'q':
   		        pars->quick = true;
 			break;
-		case 'v':
-			pars->version = true;
-			break;
 		case 'd':
 			pars->verbose = atoi(optarg);
 			break;
@@ -121,21 +116,10 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		pars->init_values[1] = '\0';
 	}
 
-	// Print version
-        if( pars->version ) {
-          printf("ngsF v%s\nCompiled on %s @ %s", NGSF_VERSION, __DATE__, __TIME__);
-#ifdef _USE_BGZF
-          printf(" (BGZF library)\n");
-#else
-          printf(" (STD library)\n");
-#endif
-          exit(0);
-        }
-
 	// Print options
         if( pars->verbose >= 1 ) {
 	  printf("==> Input Arguments:\n");
-	  printf("\tglf file: %s\n\tinit_values: %s\n\tcalc_LRT: %s\n\tfreq_fixed: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tseed: %lu\n\tquick: %s\n\tversion: %s\n\tverbose: %d\n\n",
+	  printf("\tglf file: %s\n\tinit_values: %s\n\tcalc_LRT: %s\n\tfreq_fixed: %s\n\tout file: %s\n\tn_ind: %d\n\tn_sites: %lu\n\tchunk_size: %lu\n\tapprox_EM: %s\n\tcall_geno: %s\n\tmax_iters: %d\n\tmin_iters: %d\n\tmin_epsilon: %.10f\n\tn_threads: %d\n\tseed: %lu\n\tquick: %s\n\tverbose: %d\n\tversion: %s (%s @ %s)\n\n",
 		 pars->in_glf,
 		 pars->init_values,
 		 pars->calc_LRT ? "true":"false",
@@ -152,8 +136,8 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 		 pars->n_threads,
 		 pars->seed,
 		 pars->quick ? "true":"false",
-		 NGSF_VERSION,
-		 pars->verbose);
+		 pars->verbose,
+		 NGSF_VERSION, __DATE__, __TIME__);
 	}
 	if( pars->verbose > 4 ) printf("==> Verbose values greater than 4 for debugging purpose only. Expect large amounts of info on screen\n");
 

@@ -56,7 +56,6 @@ Executables are built into the main directory. If you wish to clean all binaries
 * `--n_threads INT`: Number of threads to use. [1]
 * `--seed`: Set seed for random number generator.
 * `--quick`: Quick run.
-* `--version`: Prints program version and exits.
 * `--verbose INT`: Selects verbosity level. [1]
 
 ### Input data
