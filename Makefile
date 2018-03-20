@@ -12,10 +12,10 @@ HTS_LIBDIR=$(realpath ./htslib/bgzf.o) $(realpath ./htslib/knetfile.o)
 all: bgzip ngsF
 endif
 
-#CFLAGS = -g -Wall
-CFLAGS = -O3 -Wall
-DFLAGS = -I$(HTS_INCDIR) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_USE_KNETFILE #-D_USE_BGZF
-LIB = $(shell pkg-config --cflags --libs gsl) -lz -lpthread $(HTS_LIBDIR)
+#CFLAGS = -g -Wall -I$(SHARED_DIR) -I$(HTS_INCDIR) $(shell pkg-config --cflags gsl)
+CFLAGS = -O3 -Wall -I$(SHARED_DIR) -I$(HTS_INCDIR) $(shell pkg-config --cflags gsl)
+DFLAGS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_USE_KNETFILE #-D_USE_BGZF
+LIB = $(shell pkg-config --libs gsl) -lz -lpthread $(HTS_LIBDIR)
 
 
 
