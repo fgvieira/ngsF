@@ -150,7 +150,7 @@ int parse_cmd_args(int argc, char **argv, params *pars) {
 	  error(__FUNCTION__,"GL input file (-glf) missing!");
 	else if( strcmp(pars->in_glf, "-") == 0 ) {
 	  pars->in_glf_type = new char[6];
-	  pars->in_glf_type = strcat(pars->in_glf_type, "STDIN");
+	  pars->in_glf_type = strcpy(pars->in_glf_type, "STDIN");
         } else {
 	  pars->in_glf_type = strrchr(pars->in_glf, '.');
 	  if(pars->in_glf_type == NULL)
